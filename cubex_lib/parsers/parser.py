@@ -1,0 +1,142 @@
+from typing import BinaryIO
+from xml.etree.ElementTree import Element as XMLNode
+
+from cubex_lib.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode
+from cubex_lib.parsers.data_parser import DataParser
+from cubex_lib.parsers.index_parser import IndexParser
+
+
+class CubexAnchorXMLParser(object):
+
+    def __init__(self, root: XMLNode):
+        self.attrs = parse_attrs(root)
+        self.metrics = parse_metrics(root)
+        self.regions = parse_regions(root)
+        self.cnodes = parse_cnodes(root)
+        self.system_tree_nodes = parse_system_tree_nodes(root)
+
+    def get_metric_by_name(self, metric_name: str) -> Metric:
+        return [metric for metric in self.metrics if metric.name == metric_name][0]
+
+    def get_region(self, cnode: CNode):
+        return [region for region in self.regions if region.id == cnode.callee_region_id][0]
+
+    def get_metric_values(self, metric: Metric, index_file: BinaryIO, data_file: BinaryIO):
+        index_parser = IndexParser(index_file)
+        num_locations = len(self.system_tree_nodes[0].all_locations())
+        data_parser = DataParser(
+            data_file=data_file,
+            data_type=metric.data_type,
+            endianness_format_char=index_parser.endianness_fmt,
+            num_locations=num_locations,
+            num_cnodes=len(index_parser.cnode_indices)
+        )
+        return dict(
+            cnode_indices=index_parser.cnode_indices,
+            values=data_parser.parsed_values
+        )
+
+
+def parse_metric(xml_node: XMLNode):
+    return Metric(
+        name=xml_node.find('uniq_name').text,
+        _id=int(xml_node.get('id')),
+        display_name=xml_node.find('disp_name').text,
+        description=xml_node.find('descr').text,
+        metric_type=xml_node.get('type'),
+        data_type=xml_node.find('dtype').text,
+        units=xml_node.find('uom').text,
+        url=xml_node.find('url').text
+    )
+
+
+def parse_metrics(root: XMLNode):
+    metrics = root.find('metrics').findall('metric')
+    return [parse_metric(metric_xml_node) for metric_xml_node in metrics]
+
+
+def parse_region(xml_node: XMLNode):
+    return Region(
+        _id=int(xml_node.get('id')),
+        begin=int(xml_node.get('begin')),
+        end=int(xml_node.get('end')),
+        name=xml_node.find('name').text,
+        mangled_name=xml_node.find('mangled_name').text,
+        paradigm=xml_node.find('paradigm').text,
+        role=xml_node.find('role').text,
+        url=xml_node.find('url').text,
+        descr=xml_node.find('descr').text,
+    )
+
+
+def parse_regions(root: XMLNode):
+    regions = root.find('program').findall('region')
+    return [parse_region(xml_node) for xml_node in regions]
+
+
+def parse_attrs(root: XMLNode):
+    return {node.get('key'): node.get('value') for node in root.findall('attr')}
+
+
+def parse_cnode(xml_node: XMLNode):
+    cnode = CNode(
+        _id=int(xml_node.get('id')),
+        callee_region_id=int(xml_node.get('calleeId'))
+    )
+    for cnode_xml_child in xml_node.findall('cnode'):
+        cnode_child = parse_cnode(cnode_xml_child)
+        cnode.add_child(cnode_child)
+    return cnode
+
+
+def parse_cnodes(root: XMLNode):
+    cnodes = root.find('program').findall('cnode')
+    return [parse_cnode(cnode) for cnode in cnodes]
+
+
+def parse_location(xml_node: XMLNode):
+    return Location(
+        _id=int(xml_node.get('Id')),
+        name=xml_node.find('name').text,
+        rank=xml_node.find('rank').text,
+        _type=xml_node.find('type').text
+    )
+
+
+def parse_location_group(xml_node: XMLNode):
+    location_group = LocationGroup(
+        _id=int(xml_node.get('Id')),
+        name=xml_node.find('name').text,
+        rank=xml_node.find('rank').text,
+        _type=xml_node.find('type').text
+    )
+
+    for xml_child_node in xml_node.findall('locationgroup'):
+        location_group.add_location_group(parse_location_group(xml_child_node))
+
+    for xml_child_node in xml_node.findall('location'):
+        location_group.add_location(parse_location(xml_child_node))
+
+    return location_group
+
+
+def parse_system_tree_node(xml_node: XMLNode):
+    system_tree_node = SystemTreeNode(
+        _id=int(xml_node.get('Id')),
+        clazz=xml_node.get('class'),
+        name=xml_node.find('name').text,
+        attrs={x.get('key'): x.get('value') for x in xml_node.findall('attr')}
+    )
+
+    for xml_child_node in xml_node.findall('systemtreenode'):
+        system_tree_node.add_system_tree_node_child(parse_system_tree_node(xml_child_node))
+
+    for xml_child_node in xml_node.findall('locationgroup'):
+        system_tree_node.add_location_group(parse_location_group(xml_child_node))
+
+    return system_tree_node
+
+
+def parse_system_tree_nodes(root: XMLNode):
+    system_tree_node_xml_nodes = root.find('system').findall('systemtreenode')
+    return [parse_system_tree_node(xml_node) for xml_node in system_tree_node_xml_nodes]
