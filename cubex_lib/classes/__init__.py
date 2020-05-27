@@ -5,3 +5,4 @@ from cubex_lib.classes.metric import Metric
 
 from cubex_lib.classes.region import Region
 from cubex_lib.classes.system_tree_node import SystemTreeNode
+from cubex_lib.classes.metric_values import MetricValues
