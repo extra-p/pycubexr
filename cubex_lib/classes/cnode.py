@@ -1,8 +1,8 @@
-import typing
+from typing import List
 
 
 class CNode(object):
-    _children: typing.List['CNode']
+    _children: List['CNode']
 
     def __init__(
             self,
@@ -17,7 +17,7 @@ class CNode(object):
     def add_child(self, child: 'CNode'):
         self._children.append(child)
 
-    def get_all_children(self) -> typing.List['CNode']:
+    def get_all_children(self) -> List['CNode']:
         cnodes = [self]
         for child in self._children:
             cnodes += child.get_all_children()

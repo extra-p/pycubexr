@@ -1,11 +1,12 @@
 import typing
+from typing import List
 
 from cubex_lib.classes import LocationGroup, Location
 
 
 class SystemTreeNode(object):
-    _system_tree_node_children: typing.List['SystemTreeNode']
-    _location_group_children: typing.List[LocationGroup]
+    _system_tree_node_children: List['SystemTreeNode']
+    _location_group_children: List[LocationGroup]
 
     def __init__(
             self,
@@ -22,14 +23,14 @@ class SystemTreeNode(object):
         self.name = name
         self.attrs = attrs
 
-    def all_location_groups(self) -> typing.List[LocationGroup]:
+    def all_location_groups(self) -> List[LocationGroup]:
         location_groups = [x for x in self._location_group_children]
         for system_tree_child in self._system_tree_node_children:
             location_groups += system_tree_child.all_location_groups()
         return location_groups
 
-    def all_locations(self) -> typing.List[Location]:
-        locations: typing.List[Location] = []
+    def all_locations(self) -> List[Location]:
+        locations: List[Location] = []
         for location_group in self.all_location_groups():
             locations += location_group.all_locations()
         return locations

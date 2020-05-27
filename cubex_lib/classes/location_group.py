@@ -1,11 +1,11 @@
-import typing
+from typing import List
 
 from cubex_lib.classes import Location
 
 
 class LocationGroup(object):
-    _location_groups: typing.List['LocationGroup']
-    _locations: typing.List[Location]
+    _location_groups: List['LocationGroup']
+    _locations: List[Location]
 
     def __init__(self, *, _id: int, name: str, rank: int, _type: str):
         self._location_groups = []

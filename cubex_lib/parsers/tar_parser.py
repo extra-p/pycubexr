@@ -4,7 +4,6 @@ from xml.etree import ElementTree
 from cubex_lib.classes import Metric, MetricValues
 from cubex_lib.parsers.anchor_xml_parser import CubexAnchorXMLParser
 from cubex_lib.parsers.metrics_parser import CubexMetricsParser
-from cubex_lib.utils import chunk_list
 
 
 class CubexTarParser(object):
@@ -17,7 +16,8 @@ class CubexTarParser(object):
 
         with self.cubex_file.extractfile('anchor.xml') as anchor_file:
             anchor = ElementTree.parse(anchor_file)
-            self.anchor_parser = CubexAnchorXMLParser(anchor)
+
+        self.anchor_parser = CubexAnchorXMLParser(anchor)
         self.metrics_parser = CubexMetricsParser(self.anchor_parser)
 
     def get_metric_values(
@@ -38,15 +38,5 @@ class CubexTarParser(object):
                 index_file=index_file,
                 data_file=data_file
             )
-
-            cnodes = [self.anchor_parser.get_cnode(cnode_index) for cnode_index in metric_values.cnode_indices]
-            metric_values.cnodes = cnodes
-
-            num_locations = len(self.anchor_parser.get_locations())
-            assert len(metric_values.values) == len(metric_values.cnode_indices) * num_locations
-            # Chunk the values. The values are a 2-d array where
-            # - the first dimension is the cnode index
-            # - the second dimension is the location index (= thread id)
-            values = chunk_list(metric_values.values, num_locations)
-            metric_values.cnode_values = values
+            assert metric_values.num_locations() == len(self.anchor_parser.get_locations())
             return metric_values
