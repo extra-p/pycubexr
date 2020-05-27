@@ -37,3 +37,7 @@
 
 - Requires at least Python version 3.5
     - Contains `typings` as defined in [PEP 484](https://www.python.org/dev/peps/pep-0484/)
+- The `cubex` files are `tar` archives
+    - :warning:  ... when extracting them and parsing the extracted `0.data` files using the low-level `IndexParser`/`DataParser` directly,
+    they will create strange behaviour
+        - in the most cases, parsing succeeds but some edge-cases (related to endianness?) create problems
