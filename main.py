@@ -2,8 +2,6 @@ from glob import glob
 
 from cubex_lib.parsers import CubexTarParser
 
-FOLDER = 'assets/kripke.p32768.d12.g160.r1/unpacked'
-
 
 def main():
     for folder in sorted(glob('assets/*.r1')):
@@ -17,10 +15,10 @@ def main():
         for metric in parsed.anchor_parser.metrics:
             try:
                 metric_values = parsed.get_metric_values(metric=metric)
-                cnode = metric_values.cnode_indices[0]
-                region = parsed.anchor_parser.get_region(parsed.anchor_parser.get_cnode(cnode))
+                cnode = metric_values.cnodes[0]
+                region = parsed.anchor_parser.get_region(cnode)
                 print('\t' + '-' * 100)
-                print(f'\tRegion: {region.name}\n\tMetric: {metric.name}\n\tMetricValues: {metric_values.values[:10]})')
+                print(f'\tRegion: {region.name}\n\tMetric: {metric.name}\n\tMetricValues: {metric_values.values[:5]})')
             except Exception as e:
                 if str(e).startswith('The cubex file does NOT contain values'):
                     continue

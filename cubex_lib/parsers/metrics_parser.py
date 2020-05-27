@@ -24,17 +24,21 @@ class CubexMetricsParser(object):
             index_file: BinaryIO,
             data_file: BinaryIO
     ) -> MetricValues:
+        # TODO: memoization can lead to problems when different index_files/data_files for each metric are parsed.
+        #  Why should this happen?
         if metric.id in self._metric_values:
             return self._metric_values[metric.id]
 
-        index_parser = CubexIndexParser(index_file=index_file)
+        index_parser = CubexIndexParser(
+            index_file=index_file
+        )
         data_parser = CubexDataParser(
             data_file=data_file,
             data_type=metric.data_type,
             endianness_format_char=index_parser.endianness_fmt
         )
+
         metric_values = MetricValues(
-            metric=metric,
             cnode_indices=index_parser.cnode_indices,
             values=data_parser.parsed_values
         )

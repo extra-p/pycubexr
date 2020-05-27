@@ -1,15 +1,14 @@
 import struct
-from typing import List, BinaryIO
+from typing import List, BinaryIO, Any
 
 
 class CubexIndexParser(object):
-    cnode_indices: List[int]
+    endianness_fmt: str
+    cnode_indices: List[Any]
     HEADER: bytes = b'CUBEX.INDEX'
 
     # TODO: this SHOULD be static
     def __init__(self, index_file: BinaryIO):
-        self.cnode_indices = []
-
         assert not index_file.closed
 
         header = index_file.read(len(self.HEADER))
