@@ -1,4 +1,4 @@
-from typing import BinaryIO
+from typing import BinaryIO, Dict
 from xml.etree.ElementTree import Element as XMLNode
 
 from cubex_lib.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode, MetricValues
@@ -7,8 +7,11 @@ from cubex_lib.parsers.index_parser import IndexParser
 
 
 class CubexAnchorXMLParser(object):
+    _metric_values: Dict[int, MetricValues]
 
     def __init__(self, root: XMLNode):
+        self._metric_values = {}
+
         self.attrs = XMLParsers.parse_attrs(root)
         self.metrics = XMLParsers.parse_metrics(root)
         self.regions = XMLParsers.parse_regions(root)
@@ -28,8 +31,13 @@ class CubexAnchorXMLParser(object):
             index_file: BinaryIO,
             data_file: BinaryIO
     ) -> MetricValues:
-        index_parser = IndexParser(index_file)
+        if metric.id in self._metric_values:
+            return self._metric_values[metric.id]
+
+        # TODO: this MUST be done a little nicer...
         num_locations = len(self.system_tree_nodes[0].all_locations())
+
+        index_parser = IndexParser(index_file)
         data_parser = DataParser(
             data_file=data_file,
             data_type=metric.data_type,
@@ -37,11 +45,16 @@ class CubexAnchorXMLParser(object):
             num_locations=num_locations,
             num_cnodes=len(index_parser.cnode_indices)
         )
-        return MetricValues(
+
+        metric_values = MetricValues(
             metric=metric,
             cnode_indices=index_parser.cnode_indices,
             values=data_parser.parsed_values
         )
+
+        self._metric_values[metric.id] = metric_values
+
+        return metric_values
 
 
 class XMLParsers(object):
