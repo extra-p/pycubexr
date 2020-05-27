@@ -2,7 +2,7 @@ import struct
 from typing import List, BinaryIO
 
 
-class IndexParser(object):
+class CubexIndexParser(object):
     cnode_indices: List[int]
     HEADER: bytes = b'CUBEX.INDEX'
 

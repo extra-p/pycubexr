@@ -1,8 +1,6 @@
-import os
-import xml.etree.ElementTree as ElementTree
 from glob import glob
 
-from cubex_lib.parsers.parser import CubexAnchorXMLParser, CubexTarParser
+from cubex_lib.parsers import CubexTarParser
 
 FOLDER = 'assets/kripke.p32768.d12.g160.r1/unpacked'
 
@@ -18,9 +16,7 @@ def main():
 
         for metric in parsed.anchor_parser.metrics:
             try:
-                metric_values = parsed.get_metric_values(
-                    metric=metric
-                )
+                metric_values = parsed.get_metric_values(metric=metric)
                 cnode = metric_values.cnode_indices[0]
                 region = parsed.anchor_parser.get_region(parsed.anchor_parser.get_cnode(cnode))
                 print('\t' + '-' * 100)

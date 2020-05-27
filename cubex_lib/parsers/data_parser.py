@@ -4,7 +4,7 @@ from typing import List, BinaryIO, Any
 from cubex_lib.utils.metric_formats import METRIC_FORMATS
 
 
-class DataParser(object):
+class CubexDataParser(object):
     parsed_values: List[Any]
     HEADER: bytes = b'CUBEX.DATA'
 
