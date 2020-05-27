@@ -14,27 +14,22 @@ class DataParser(object):
             data_file: BinaryIO,
             data_type: str,
             # Either "<" or ">"
-            endianness_format_char: str,
-            num_locations: int,
-            num_cnodes: int
+            endianness_format_char: str
     ):
         # Verify the data file header
         header = data_file.read(len(self.HEADER))
         assert header == self.HEADER
 
-        # Calculate how many values the data file should contain
-        values_to_parse = num_locations * num_cnodes
-
-        # Example: the format '<100i' means to parse/"unpack" 100 integers
-        unpack_format = endianness_format_char + str(values_to_parse) + METRIC_FORMATS[data_type]
-
-        # Calculate how many bytes the file SHOULD have
-        value_size = struct.calcsize(unpack_format)
-
-        # Read the whole data file
         raw = data_file.read()
 
-        assert len(raw) == value_size
+        # Calculate the size for a single element
+        single_value_size = struct.calcsize(METRIC_FORMATS[data_type])
 
+        # Verify that the number of read bytes is divisible by the value size
+        assert len(raw) % single_value_size == 0
+
+        num_values = int(len(raw) / single_value_size)
+
+        # Example: the format '<100i' means to parse/"unpack" 100 integers
+        unpack_format = endianness_format_char + str(num_values) + METRIC_FORMATS[data_type]
         self.parsed_values = list(struct.unpack(unpack_format, raw))
-        assert len(self.parsed_values) == values_to_parse

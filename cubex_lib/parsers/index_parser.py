@@ -9,7 +9,6 @@ class IndexParser(object):
     # TODO: this SHOULD be static
     def __init__(self, index_file: BinaryIO):
         self.cnode_indices = []
-        self.endianness_fmt = '<'
 
         assert not index_file.closed
 
@@ -39,6 +38,7 @@ class IndexParser(object):
         index_value_size = struct.calcsize("i")
         if len(raw_index) != index_value_size * n_nodes:
             raise Exception("The size of the index list should equal to (size of one index value * number of nodes).")
+
         self.cnode_indices = list(struct.unpack('{}{}i'.format(self.endianness_fmt, n_nodes), raw_index))
         assert len(self.cnode_indices) > 0
         assert index_file.peek() == b''

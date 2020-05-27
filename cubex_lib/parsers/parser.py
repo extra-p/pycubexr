@@ -1,17 +1,17 @@
-from typing import BinaryIO, Dict
+import tarfile
+from typing import BinaryIO, Dict, List
+from xml.etree import ElementTree
 from xml.etree.ElementTree import Element as XMLNode
 
 from cubex_lib.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode, MetricValues
 from cubex_lib.parsers.data_parser import DataParser
 from cubex_lib.parsers.index_parser import IndexParser
+from cubex_lib.utils import chunk_list
 
 
 class CubexAnchorXMLParser(object):
-    _metric_values: Dict[int, MetricValues]
 
-    def __init__(self, root: XMLNode):
-        self._metric_values = {}
-
+    def __init__(self, root: ElementTree):
         self.attrs = XMLParsers.parse_attrs(root)
         self.metrics = XMLParsers.parse_metrics(root)
         self.regions = XMLParsers.parse_regions(root)
@@ -21,8 +21,26 @@ class CubexAnchorXMLParser(object):
     def get_metric_by_name(self, metric_name: str) -> Metric:
         return [metric for metric in self.metrics if metric.name == metric_name][0]
 
-    def get_region(self, cnode: CNode):
+    def get_region(self, cnode: CNode) -> Region:
         return [region for region in self.regions if region.id == cnode.callee_region_id][0]
+
+    def get_cnode(self, cnode_id: int) -> CNode:
+        return [cnode for cnode in self.cnodes[0].get_all_children() if cnode.id == cnode_id][0]
+
+    def get_locations(self) -> List[Location]:
+        return self.system_tree_nodes[0].all_locations()
+
+
+class CubexMetricsParser(object):
+    _metric_values: Dict[int, MetricValues]
+
+    def __init__(
+            self,
+            # TODO: this SHOULD not be passed
+            anchor_parser: CubexAnchorXMLParser
+    ):
+        self._metric_values = {}
+        self._anchor_parser = anchor_parser
 
     def get_metric_values(
             self,
@@ -34,27 +52,66 @@ class CubexAnchorXMLParser(object):
         if metric.id in self._metric_values:
             return self._metric_values[metric.id]
 
-        # TODO: this MUST be done a little nicer...
-        num_locations = len(self.system_tree_nodes[0].all_locations())
-
-        index_parser = IndexParser(index_file)
+        index_parser = IndexParser(index_file=index_file)
         data_parser = DataParser(
             data_file=data_file,
             data_type=metric.data_type,
-            endianness_format_char=index_parser.endianness_fmt,
-            num_locations=num_locations,
-            num_cnodes=len(index_parser.cnode_indices)
+            endianness_format_char=index_parser.endianness_fmt
         )
-
         metric_values = MetricValues(
             metric=metric,
             cnode_indices=index_parser.cnode_indices,
             values=data_parser.parsed_values
         )
-
         self._metric_values[metric.id] = metric_values
-
         return metric_values
+
+
+class CubexTarParser(object):
+    metrics_parser: CubexMetricsParser
+    anchor_parser: CubexAnchorXMLParser
+
+    def __init__(self, cubex_filename: str):
+        self.cubex_filename = cubex_filename
+        self.cubex_file = tarfile.open(self.cubex_filename, 'r')
+
+        with self.cubex_file.extractfile('anchor.xml') as anchor_file:
+            anchor = ElementTree.parse(anchor_file)
+            self.anchor_parser = CubexAnchorXMLParser(anchor)
+        self.metrics_parser = CubexMetricsParser(self.anchor_parser)
+
+    def get_metric_values(
+            self,
+            metric: Metric
+    ) -> MetricValues:
+        index_file_name = f'{metric.id}.index'
+        data_file_name = f'{metric.id}.data'
+
+        if index_file_name not in [x.name for x in self.cubex_file.getmembers()]:
+            # TODO: this should be a custom Exception so that it can be catched more easily
+            raise Exception(f'The cubex file does NOT contain values for the metric ({metric})')
+
+        with self.cubex_file.extractfile(index_file_name) as index_file, self.cubex_file.extractfile(
+                data_file_name) as data_file:
+            metric_values = self.metrics_parser.get_metric_values(
+                metric=metric,
+                index_file=index_file,
+                data_file=data_file
+            )
+
+            num_locations = len(self.anchor_parser.get_locations())
+            cnodes: List[CNode] = [
+                self.anchor_parser.get_cnode(cnode_index) for cnode_index in metric_values.cnode_indices
+            ]
+
+            assert len(metric_values.values) == len(cnodes) * num_locations
+
+            values = chunk_list(metric_values.values, num_locations)
+
+            assert len(values) == len(cnodes)
+            assert all(len(values_) == num_locations for values_ in values)
+
+            return metric_values
 
 
 class XMLParsers(object):

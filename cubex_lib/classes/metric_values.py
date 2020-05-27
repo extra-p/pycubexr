@@ -10,6 +10,7 @@ class MetricValues(object):
             *,
             metric: Metric,
             cnode_indices: List[int],
+            # The first dimension is the cnode, the second the location (= thread)
             values: List[Any]
     ):
         self.metric = metric
