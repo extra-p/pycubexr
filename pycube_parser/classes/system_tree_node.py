@@ -1,7 +1,7 @@
 import typing
 from typing import List
 
-from cubex_lib.classes import LocationGroup, Location
+from pycube_parser.classes import LocationGroup, Location
 
 
 class SystemTreeNode(object):

@@ -1,9 +1,9 @@
 from typing import Dict, BinaryIO
 
-from cubex_lib.classes import MetricValues, Metric
-from cubex_lib.parsers.anchor_xml_parser import CubexAnchorXMLParser
-from cubex_lib.parsers.data_parser import CubexDataParser
-from cubex_lib.parsers.index_parser import CubexIndexParser
+from pycube_parser.classes import MetricValues, Metric
+from pycube_parser.parsers.anchor_xml_parser import CubexAnchorXMLParser
+from pycube_parser.parsers.data_parser import CubexDataParser
+from pycube_parser.parsers.index_parser import CubexIndexParser
 
 
 class CubexMetricsParser(object):

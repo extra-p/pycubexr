@@ -1,8 +1,8 @@
 from typing import List
 from xml.etree import ElementTree
 
-from cubex_lib.classes import Metric, Region, CNode, Location
-from cubex_lib.parsers.xml_parser_helper import CubexXMLParsers
+from pycube_parser.classes import Metric, Region, CNode, Location
+from pycube_parser.parsers.xml_parser_helper import CubexXMLParsers
 
 
 class CubexAnchorXMLParser(object):

@@ -1,7 +1,7 @@
 import struct
 from typing import List, BinaryIO, Any
 
-from cubex_lib.utils.metric_formats import METRIC_FORMATS
+from pycube_parser.utils.metric_formats import METRIC_FORMATS
 
 
 class CubexDataParser(object):

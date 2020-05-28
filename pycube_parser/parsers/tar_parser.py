@@ -1,9 +1,9 @@
 import tarfile
 from xml.etree import ElementTree
 
-from cubex_lib.classes import Metric, MetricValues
-from cubex_lib.parsers.anchor_xml_parser import CubexAnchorXMLParser
-from cubex_lib.parsers.metrics_parser import CubexMetricsParser
+from pycube_parser.classes import Metric, MetricValues
+from pycube_parser.parsers.anchor_xml_parser import CubexAnchorXMLParser
+from pycube_parser.parsers.metrics_parser import CubexMetricsParser
 
 
 class CubexTarParser(object):
@@ -12,7 +12,7 @@ class CubexTarParser(object):
 
     def __init__(self, cubex_filename: str):
         self.cubex_filename = cubex_filename
-        self.cubex_file = tarfile.open(self.cubex_filename, 'r')
+        self.cubex_file = tarfile.open(self.cubex_filename)
 
         with self.cubex_file.extractfile('anchor.xml') as anchor_file:
             anchor = ElementTree.parse(anchor_file)
