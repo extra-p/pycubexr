@@ -1,6 +1,6 @@
 from glob import glob
 
-from pycube_parser.parsers import CubexTarParser
+from pycube_parser import CubexTarParser
 
 
 def main():

@@ -1,5 +1,27 @@
 # Parser for `cubex` files
 
+## Instruction
+
+### Installation
+```
+pip3 install --upgrade pycube_parser
+```
+
+### Usage
+
+```python
+from pycube_parser import CubexTarParser
+
+cubex_file_path = "some/profile.cubex"
+parsed = CubexTarParser(cubex_file_path)
+
+for metric in parsed.anchor_parser.metrics:
+    metric_values = parsed.get_metric_values(metric=metric)
+    cnode = parsed.anchor_parser.get_cnode(metric_values.cnode_indices[0])
+    region = parsed.anchor_parser.get_region(cnode)
+    cnode_values = metric_values.cnode_values(cnode.id)
+```
+
 ## `cubex` file format
 
 - `anchor.xml`
