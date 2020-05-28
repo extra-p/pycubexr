@@ -1,21 +1,15 @@
 from typing import Dict, BinaryIO
 
-from pycube_parser.classes import MetricValues, Metric
-from pycube_parser.parsers.anchor_xml_parser import CubexAnchorXMLParser
-from pycube_parser.parsers.data_parser import CubexDataParser
-from pycube_parser.parsers.index_parser import CubexIndexParser
+from pycubex_parser.classes import MetricValues, Metric
+from pycubex_parser.parsers.data_parser import CubexDataParser
+from pycubex_parser.parsers.index_parser import CubexIndexParser
 
 
 class CubexMetricsParser(object):
     _metric_values: Dict[int, MetricValues]
 
-    def __init__(
-            self,
-            # TODO: this SHOULD not be passed
-            anchor_parser: CubexAnchorXMLParser
-    ):
+    def __init__(self):
         self._metric_values = {}
-        self._anchor_parser = anchor_parser
 
     def get_metric_values(
             self,

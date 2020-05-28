@@ -1,6 +1,6 @@
 from typing import List, Any
 
-from pycube_parser.utils.logger import logger
+from pycubex_parser.utils.logger import logger
 
 
 def chunk_list(elements: List[Any], chunk_size: int):

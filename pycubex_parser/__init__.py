@@ -1,0 +1,1 @@
+from pycubex_parser.parsers import CubexTarParser

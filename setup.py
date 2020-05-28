@@ -4,14 +4,14 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pycube_parser",
+    name="pycubex_parser",
     version="0.0.1",
     author="David Gengenbach",
     author_email="info@davidgengenbach.de",
     description="Parser for *.cubex files",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/davidgengenbach/pycube_parser",
+    url="https://github.com/davidgengenbach/pycubex_parser",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

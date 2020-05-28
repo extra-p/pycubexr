@@ -1,16 +1,19 @@
-# Parser for `cubex` files
+# `pycubex_parser`: a parser for `cubex` files
 
 ## Instruction
 
 ### Installation
 ```
-pip3 install --upgrade pycube_parser
+pip3 install git+https://github.com/davidgengenbach/pycubex_parser.git
+
+## TODO: needs to be published first
+pip3 install --upgrade pycubex_parser
 ```
 
 ### Usage
 
 ```python
-from pycube_parser import CubexTarParser
+from pycubex_parser import CubexTarParser
 
 cubex_file_path = "some/profile.cubex"
 parsed = CubexTarParser(cubex_file_path)
@@ -63,3 +66,21 @@ for metric in parsed.anchor_parser.metrics:
     - :warning:  ... when extracting them and parsing the extracted `0.data` files using the low-level `IndexParser`/`DataParser` directly,
     they will create strange behaviour
         - in the most cases, parsing succeeds but some edge-cases (related to endianness?) create problems
+
+## Development
+
+To publish this package, you need a [PyPi account](https://pypi.org/manage/account/) with an API token with permissions to publish this package (`pycubex_parser`).
+
+```shell
+# Install publish dependencies (once)
+python3 -m pip install --upgrade setuptools wheel twine
+
+# Build
+python3 setup.py sdist bdist_wheel
+
+# Test upload (needs account on https://test.pypi.org, not on https://pypi.org
+python3 -m twine upload --repository testpypi dist/*
+# Upload package
+python3 -m twine upload dist/*
+
+```
