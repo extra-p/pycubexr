@@ -1,8 +1,8 @@
 from typing import Dict, BinaryIO
 
 from pycubex_parser.classes import MetricValues, Metric
-from pycubex_parser.parsers.data_parser import CubexDataParser
-from pycubex_parser.parsers.index_parser import CubexIndexParser
+from pycubex_parser.parsers.data_parser import parse_data
+from pycubex_parser.parsers.index_parser import parse_index
 
 
 class CubexMetricsParser(object):
@@ -23,18 +23,19 @@ class CubexMetricsParser(object):
         if metric.id in self._metric_values:
             return self._metric_values[metric.id]
 
-        index_parser = CubexIndexParser(
+        index_parse_result = parse_index(
             index_file=index_file
         )
-        data_parser = CubexDataParser(
+
+        values = parse_data(
             data_file=data_file,
             data_type=metric.data_type,
-            endianness_format_char=index_parser.endianness_fmt
+            endianness_format_char=index_parse_result.endianness_format
         )
 
         metric_values = MetricValues(
-            cnode_indices=index_parser.cnode_indices,
-            values=data_parser.parsed_values
+            cnode_indices=index_parse_result.cnode_indices,
+            values=values
         )
         self._metric_values[metric.id] = metric_values
         return metric_values
