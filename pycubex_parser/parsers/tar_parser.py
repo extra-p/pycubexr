@@ -12,6 +12,8 @@ class CubexTarParser(object):
 
     def __init__(self, cubex_filename: str):
         self.cubex_filename = cubex_filename
+
+    def __enter__(self):
         self.cubex_file = tarfile.open(self.cubex_filename)
 
         with self.cubex_file.extractfile('anchor.xml') as anchor_file:
@@ -19,6 +21,10 @@ class CubexTarParser(object):
 
         self.anchor_parser = CubexAnchorXMLParser(anchor)
         self.metrics_parser = CubexMetricsParser()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cubex_file.close()
 
     def get_metric_values(
             self,
