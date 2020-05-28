@@ -13,6 +13,9 @@ class CubexAnchorXMLParser(object):
         self.regions = xml_parser_helper.parse_regions(root)
         self.cnodes = xml_parser_helper.parse_cnodes(root)
         self.system_tree_nodes = xml_parser_helper.parse_system_tree_nodes(root)
+        # TODO: is this always the case? All examples had this structure
+        assert len(self.cnodes) == 1
+        assert len(self.system_tree_nodes) == 1
 
     def get_metric_by_name(self, metric_name: str) -> Metric:
         return [metric for metric in self.metrics if metric.name == metric_name][0]
@@ -25,3 +28,12 @@ class CubexAnchorXMLParser(object):
 
     def get_locations(self) -> List[Location]:
         return self.system_tree_nodes[0].all_locations()
+
+    def print_calltree(self, indent=0, cnode: CNode = None):
+        if cnode is None:
+            cnode = self.cnodes[0]
+
+        print('\t' * indent, self.get_region(cnode).name)
+
+        for child in cnode.get_children():
+            self.print_calltree(indent + 1, cnode=child)

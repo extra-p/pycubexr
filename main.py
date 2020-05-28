@@ -12,6 +12,8 @@ def main():
         profile = f'{folder}/profile.cubex'
 
         with CubexTarParser(profile) as parsed:
+            parsed.anchor_parser.print_calltree()
+
             for metric in parsed.anchor_parser.metrics:
                 try:
                     metric_values = parsed.get_metric_values(metric=metric)

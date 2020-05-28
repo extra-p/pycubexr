@@ -14,6 +14,9 @@ class CNode(object):
         self.id = _id
         self.callee_region_id = callee_region_id
 
+    def get_children(self):
+        return self._children
+
     def add_child(self, child: 'CNode'):
         self._children.append(child)
 
