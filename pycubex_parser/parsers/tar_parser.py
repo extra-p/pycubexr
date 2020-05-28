@@ -1,9 +1,11 @@
 import tarfile
+from typing import List
 from xml.etree import ElementTree
 
 from pycubex_parser.classes import Metric, MetricValues
 from pycubex_parser.parsers.anchor_xml_parser import CubexAnchorXMLParser
 from pycubex_parser.parsers.metrics_parser import CubexMetricsParser
+from pycubex_parser.utils.exceptions import MissingMetricError
 
 
 class CubexTarParser(object):
@@ -33,9 +35,8 @@ class CubexTarParser(object):
         index_file_name = f'{metric.id}.index'
         data_file_name = f'{metric.id}.data'
 
-        if index_file_name not in [x.name for x in self.cubex_file.getmembers()]:
-            # TODO: this should be a custom Exception so that it can be caught more easily
-            raise Exception(f'The cubex file does NOT contain values for the metric ({metric})')
+        if index_file_name not in self._tar_file_members():
+            raise MissingMetricError(metric)
 
         with self.cubex_file.extractfile(index_file_name) as index_file, \
                 self.cubex_file.extractfile(data_file_name) as data_file:
@@ -46,3 +47,6 @@ class CubexTarParser(object):
             )
             assert metric_values.num_locations() == len(self.anchor_parser.get_locations())
             return metric_values
+
+    def _tar_file_members(self) -> List[str]:
+        return [x.name for x in self.cubex_file.getmembers()]

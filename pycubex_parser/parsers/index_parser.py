@@ -1,14 +1,14 @@
 import struct
 from typing import List, BinaryIO, Any
 
+from pycubex_parser.utils.exceptions import CorruptIndexError
+
 INDEX_HEADER: bytes = b'CUBEX.INDEX'
 
 
 class IndexParseResult(object):
-    endianness_format: str
-    cnode_indices: List[Any]
 
-    def __init__(self, endianness_format, cnode_indices):
+    def __init__(self, endianness_format: str, cnode_indices: List[Any]):
         self.endianness_format = endianness_format
         self.cnode_indices = cnode_indices
 
@@ -41,7 +41,9 @@ def parse_index(index_file: BinaryIO) -> IndexParseResult:
 
     index_value_size = struct.calcsize("i")
     if len(raw_index) != index_value_size * n_nodes:
-        raise Exception("The size of the index list should equal to (size of one index value * number of nodes).")
+        raise CorruptIndexError(
+            "The size of the index list should be equal to (size of one index value * number of nodes)."
+        )
 
     cnode_indices = list(struct.unpack('{}{}i'.format(endianness_format, n_nodes), raw_index))
     assert len(cnode_indices) > 0

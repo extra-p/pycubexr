@@ -1,6 +1,7 @@
 from glob import glob
 
 from pycubex_parser import CubexTarParser
+from pycubex_parser.utils.exceptions import MissingMetricError
 
 
 def main():
@@ -19,10 +20,8 @@ def main():
                     region = parsed.anchor_parser.get_region(cnode)
                     print('\t' + '-' * 100)
                     print(f'\tRegion: {region.name}\n\tMetric: {metric.name}\n\tMetricValues: {cnode_values})')
-                except Exception as e:
-                    if str(e).startswith('The cubex file does NOT contain values'):
-                        continue
-                    print(f'Error extracting metric ({metric.name}): {e}. Ignoring')
+                except MissingMetricError as e:
+                    pass
 
 
 if __name__ == '__main__':
