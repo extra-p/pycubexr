@@ -12,14 +12,14 @@ def main():
         profile = f'{folder}/profile.cubex'
 
         with CubexTarParser(profile) as parsed:
-            parsed.anchor_parser.print_calltree()
+            parsed.print_calltree()
 
-            for metric in parsed.anchor_parser.metrics:
+            for metric in parsed.get_metrics():
                 try:
                     metric_values = parsed.get_metric_values(metric=metric)
-                    cnode = parsed.anchor_parser.get_cnode(metric_values.cnode_indices[0])
+                    cnode = parsed.get_cnode(metric_values.cnode_indices[0])
                     cnode_values = metric_values.cnode_values(cnode.id)[:5]
-                    region = parsed.anchor_parser.get_region(cnode)
+                    region = parsed.get_region(cnode)
                     print('\t' + '-' * 100)
                     print(f'\tRegion: {region.name}\n\tMetric: {metric.name}\n\tMetricValues: {cnode_values})')
                 except MissingMetricError as e:
