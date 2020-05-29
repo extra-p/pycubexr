@@ -12,14 +12,14 @@ class SystemTreeNode(object):
             self,
             *,
             _id: int,
-            clazz: str,
+            _class: str,
             name: str,
             attrs: typing.Dict[str, str]
     ):
         self._system_tree_node_children = []
         self._location_group_children = []
         self.id = _id
-        self.clazz = clazz
+        self.clazz = _class
         self.name = name
         self.attrs = attrs
 

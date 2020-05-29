@@ -13,14 +13,14 @@ pip3 install --upgrade pycubex_parser
 ### Usage
 
 ```python
-from pycubex_parser import CubexTarParser
+from pycubex_parser import CubexParser
 
 cubex_file_path = "some/profile.cubex"
-with CubexTarParser(cubex_file_path) as parsed:
-    for metric in parsed.get_metrics():
-        metric_values = parsed.get_metric_values(metric=metric)
-        cnode = parsed.get_cnode(metric_values.cnode_indices[0])
-        region = parsed.get_region(cnode)
+with CubexParser(cubex_file_path) as cubex:
+    for metric in cubex.get_metrics():
+        metric_values = cubex.get_metric_values(metric=metric)
+        cnode = cubex.get_cnode(metric_values.cnode_indices[0])
+        region = cubex.get_region(cnode)
         cnode_values = metric_values.cnode_values(cnode.id)
 ```
 

@@ -1,6 +1,6 @@
 from glob import glob
 
-from pycubex_parser import CubexTarParser
+from pycubex_parser import CubexParser
 from pycubex_parser.utils.exceptions import MissingMetricError
 
 
@@ -11,7 +11,7 @@ def main():
 
         profile = f'{folder}/profile.cubex'
 
-        with CubexTarParser(profile) as parsed:
+        with CubexParser(profile) as parsed:
             parsed.print_calltree()
 
             for metric in parsed.get_metrics():
@@ -23,6 +23,7 @@ def main():
                     print('\t' + '-' * 100)
                     print(f'\tRegion: {region.name}\n\tMetric: {metric.name}\n\tMetricValues: {cnode_values})')
                 except MissingMetricError as e:
+                    # Ignore missing metrics
                     pass
 
 

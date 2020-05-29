@@ -17,8 +17,10 @@ def parse_metric(xml_node: XMLNode):
 
 
 def parse_metrics(root: XMLNode):
-    metrics = root.find('metrics').findall('metric')
-    return [parse_metric(metric_xml_node) for metric_xml_node in metrics]
+    return [
+        parse_metric(metric_xml_node) for metric_xml_node
+        in root.find('metrics').findall('metric')
+    ]
 
 
 def parse_region(xml_node: XMLNode):
@@ -36,12 +38,17 @@ def parse_region(xml_node: XMLNode):
 
 
 def parse_regions(root: XMLNode):
-    regions = root.find('program').findall('region')
-    return [parse_region(xml_node) for xml_node in regions]
+    return [
+        parse_region(xml_node) for xml_node
+        in root.find('program').findall('region')
+    ]
 
 
 def parse_attrs(root: XMLNode):
-    return {node.get('key'): node.get('value') for node in root.findall('attr')}
+    return {
+        node.get('key'): node.get('value') for node
+        in root.findall('attr')
+    }
 
 
 def parse_cnode(xml_node: XMLNode):
@@ -56,8 +63,10 @@ def parse_cnode(xml_node: XMLNode):
 
 
 def parse_cnodes(root: XMLNode):
-    cnodes = root.find('program').findall('cnode')
-    return [parse_cnode(cnode) for cnode in cnodes]
+    return [
+        parse_cnode(cnode) for cnode
+        in root.find('program').findall('cnode')
+    ]
 
 
 def parse_location(xml_node: XMLNode):
@@ -89,7 +98,7 @@ def parse_location_group(xml_node: XMLNode):
 def parse_system_tree_node(xml_node: XMLNode):
     system_tree_node = SystemTreeNode(
         _id=int(xml_node.get('Id')),
-        clazz=xml_node.get('class'),
+        _class=xml_node.get('class'),
         name=xml_node.find('name').text,
         attrs={x.get('key'): x.get('value') for x in xml_node.findall('attr')}
     )
@@ -104,5 +113,7 @@ def parse_system_tree_node(xml_node: XMLNode):
 
 
 def parse_system_tree_nodes(root: XMLNode):
-    system_tree_node_xml_nodes = root.find('system').findall('systemtreenode')
-    return [parse_system_tree_node(xml_node) for xml_node in system_tree_node_xml_nodes]
+    return [
+        parse_system_tree_node(xml_node) for xml_node
+        in root.find('system').findall('systemtreenode')
+    ]
