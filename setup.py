@@ -11,7 +11,7 @@ setuptools.setup(
     description="Python Cube file reader for the Cube 4.x file format",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/extra-p/py-cube",
+    url="https://github.com/extra-p/pycube",
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

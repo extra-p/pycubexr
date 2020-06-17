@@ -9,10 +9,7 @@ pip install -e C:\Users\Admin\git\pycube
 python test/test.py
 ```
 
-[cube-4.x Download](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)
-
-
-# `pycubex_parser`: a parser for `cubex` files
+[Link to Cubex file format](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)
 
 ## Instruction
 
