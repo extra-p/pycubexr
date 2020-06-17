@@ -1,11 +1,12 @@
-# py-cube
+# pycube
 
 ```
 python -m venv /tmppython
 \tmppython\Scripts\activate
 deactivate
 python setup.py sdist bdist_wheel
-pip install -e C:\Users\Admin\git\py-cube
+pip install -e C:\Users\Admin\git\pycube
+python test/test.py
 ```
 
 [cube-4.x Download](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)

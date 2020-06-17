@@ -3,10 +3,10 @@ from tarfile import TarFile
 from typing import List, Dict
 from xml.etree import ElementTree
 
-from pycubex_parser.classes import Metric, MetricValues, Region, CNode, Location
-from pycubex_parser.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
-from pycubex_parser.parsers.metrics_parser import extract_metric_values
-from pycubex_parser.utils.exceptions import MissingMetricError
+from pycube.classes import Metric, MetricValues, Region, CNode, Location
+from pycube.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
+from pycube.parsers.metrics_parser import extract_metric_values
+from pycube.utils.exceptions import MissingMetricError
 
 
 class CubexParser(object):

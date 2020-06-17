@@ -1,7 +1,7 @@
 import struct
 from typing import List, BinaryIO, Any
 
-from pycubex_parser.utils.exceptions import CorruptIndexError
+from pycube.utils.exceptions import CorruptIndexError
 
 INDEX_HEADER: bytes = b'CUBEX.INDEX'
 

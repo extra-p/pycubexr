@@ -1,13 +1,13 @@
 from glob import glob
 
-from pycubex_parser import CubexParser
-from pycubex_parser.utils.exceptions import MissingMetricError
+from pycube import CubexParser
+from pycube.utils.exceptions import MissingMetricError
 
 #"data/blast.p64.r1/profile.cubex"
 #'assets/*.r1'
 
 def main():
-    for folder in sorted(glob('data/kripke.p8.d2.g32.r1')):
+    for folder in sorted(glob('../data/one_parameter')):
         print('-' * 99)
         print(folder)
 

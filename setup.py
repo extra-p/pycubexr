@@ -4,7 +4,7 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="py-cube",
+    name="pycube",
     version="0.0.1",
     author="Extra-P project",
     author_email="extra-p@lists.parallel.informatik.tu-darmstadt.de",

@@ -1,6 +1,6 @@
 from xml.etree.ElementTree import Element as XMLNode
 
-from pycubex_parser.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode
+from pycube.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode
 
 
 def parse_metric(xml_node: XMLNode):

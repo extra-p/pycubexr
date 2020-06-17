@@ -1,8 +1,8 @@
 from typing import BinaryIO
 
-from pycubex_parser.classes import MetricValues, Metric
-from pycubex_parser.parsers.data_parser import parse_data
-from pycubex_parser.parsers.index_parser import parse_index
+from pycube.classes import MetricValues, Metric
+from pycube.parsers.data_parser import parse_data
+from pycube.parsers.index_parser import parse_index
 
 
 def extract_metric_values(

@@ -1,6 +1,6 @@
 from typing import List
 
-from pycubex_parser.classes import Location
+from pycube.classes import Location
 
 
 class LocationGroup(object):
