@@ -1,5 +1,7 @@
+from typing import Dict, List
 from xml.etree import ElementTree
 
+from pycubex_parser.classes import Metric, Region, CNode, SystemTreeNode
 from pycubex_parser.parsers import xml_parser_helper
 
 
@@ -8,11 +10,11 @@ class AnchorXMLParseResult(object):
     def __init__(
             self,
             *,
-            attrs,
-            metrics,
-            regions,
-            cnodes,
-            system_tree_nodes
+            attrs: Dict[str, str],
+            metrics: List[Metric],
+            regions: List[Region],
+            cnodes: List[CNode],
+            system_tree_nodes: List[SystemTreeNode]
     ):
         self.attrs = attrs
         self.metrics = metrics
