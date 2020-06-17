@@ -1,3 +1,16 @@
+# py-cube
+
+```
+python -m venv /tmppython
+\tmppython\Scripts\activate
+deactivate
+python setup.py sdist bdist_wheel
+pip install -e C:\Users\Admin\git\py-cube
+```
+
+[cube-4.x Download](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)
+
+
 # `pycubex_parser`: a parser for `cubex` files
 
 ## Instruction
