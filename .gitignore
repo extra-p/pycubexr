@@ -1,3 +1,6 @@
+# ignore .idea folder
+.idea 
+
 # ignore the eclipse project file
 .project
 
