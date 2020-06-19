@@ -71,30 +71,20 @@ class CubexParser(object):
     def get_locations(self) -> List[Location]:
         return self._anchor_result.system_tree_nodes[0].all_locations()
     
-    def get_calltree(self, indent=0, parent="", cnode: CNode = None):
+    def get_calltree(self, indent=0, cnode: CNode = None):
         if cnode is None:
             cnode = self._anchor_result.cnodes[0]
-            
-        #calltree = CallTree()
-        
-        
         call_tree_string = ""
-        call_tree_string += self.get_region(cnode).name
-        
-        parent = call_tree_string
-        
+        child_string = ""
+        child_string += "-"*indent + self.get_region(cnode).name
+        call_tree_string += child_string
         call_tree_string += "\n"
         
-        #print(call_tree_string)
-        
         for child in cnode.get_children():
-            tmp = self.get_calltree(indent + 1, parent, cnode=child)
+            tmp = self.get_calltree(indent + 1, cnode=child)
             if tmp is not None:
-                call_tree_string += parent + "->" + tmp
-                pass
-            #print(tmp)
-            
-        #return calltree
+                call_tree_string += tmp
+
         return call_tree_string
 
     def print_calltree(self, indent=0, cnode: CNode = None):
