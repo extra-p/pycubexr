@@ -4,6 +4,11 @@ Description.
 
 [Link to Cubex file format](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)
 
+### Table of Contents
+
+1. [Installation](#Installation)
+2. [Usage](#Usage)
+3. [License](#License)
 
 ### Installation
 ```
