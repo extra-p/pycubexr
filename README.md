@@ -89,5 +89,4 @@ python3 -m twine upload dist/*
 
 ## License
 
-Text.
-
+[BSD 3-Clause "New" or "Revised" License](LICENSE)
