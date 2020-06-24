@@ -1,7 +1,7 @@
 import struct
 from typing import List, BinaryIO, Any
 
-from pycube.utils.metric_formats import METRIC_FORMATS
+from pycuber.utils.metric_formats import METRIC_FORMATS
 
 DATA_HEADER: bytes = b'CUBEX.DATA'
 

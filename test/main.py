@@ -1,7 +1,7 @@
 from glob import glob
 
-from pycube import CubexParser
-from pycube.utils.exceptions import MissingMetricError
+from pycuber import CubexParser
+from pycuber.utils.exceptions import MissingMetricError
 
 #"data/blast.p64.r1/profile.cubex"
 #'assets/*.r1'

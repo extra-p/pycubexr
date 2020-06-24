@@ -1,4 +1,4 @@
-from pycube.utils.metric_formats import METRIC_FORMATS
+from pycuber.utils.metric_formats import METRIC_FORMATS
 
 
 class MetricType(object):

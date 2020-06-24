@@ -1,8 +1,8 @@
 from typing import Dict, List
 from xml.etree import ElementTree
 
-from pycube.classes import Metric, Region, CNode, SystemTreeNode
-from pycube.parsers import xml_parser_helper
+from pycuber.classes import Metric, Region, CNode, SystemTreeNode
+from pycuber.parsers import xml_parser_helper
 
 
 class AnchorXMLParseResult(object):
