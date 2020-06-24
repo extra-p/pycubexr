@@ -1,4 +1,4 @@
-from pycuber.classes import Metric
+from pycubexr.classes import Metric
 
 
 class MissingMetricError(Exception):
