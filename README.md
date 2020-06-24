@@ -5,11 +5,11 @@ pyCubeR is a Python package for reading the [Cube4](https://www.scalasca.org/sca
 For question regarding pyCubeR please send a message to <extra-p@lists.parallel.informatik.tu-darmstadt.de>.
 
 ## Installation
-```
-pip3 install git+https://github.com/davidgengenbach/pycubex_parser.git
 
-## TODO: needs to be published first
-pip3 install --upgrade pycubex_parser
+To install the current release of pyCubeR:
+
+```
+$ pip install pycuber
 ```
 
 ## Usage
