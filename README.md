@@ -1,14 +1,10 @@
-### pycube
+### pyCubeR
 
-Description.
+pyCubeR is a Python package for reading the [Cube4](https://www.scalasca.org/scalasca/software/cube-4.x/download.html) file format. Cube is used as a performance report explorer for Scalasca and Score-P. It is used as a generic tool for displaying a multi-dimensional performance space consisting of the dimensions (i) performance metric, (ii) call path, and (iii) system resource. Each dimension can be represented as a tree, where non-leaf nodes of the tree can be collapsed or expanded to achieve the desired level of granularity. The Cube4 data format is provided for Cube files produced with the [Score-P](https://www.vi-hps.org/projects/score-p) performance instrumentation and measurement infrastructure or the [Scalasca version 2.x](https://www.scalasca.org/scalasca/software/scalasca-2.x/download.html) trace analyzer (and other compatible tools). 
 
-[Link to Cubex file format](https://www.scalasca.org/scalasca/software/cube-4.x/download.html)
+For question regarding pyCubeR please send a message to <extra-p@lists.parallel.informatik.tu-darmstadt.de>.
 
-### Table of Contents
-
-1. [Installation](#Installation)
-2. [Usage](#Usage)
-3. [License](#License)
+--------------------------------------------------------------------
 
 ### Installation
 ```
@@ -17,6 +13,8 @@ pip3 install git+https://github.com/davidgengenbach/pycubex_parser.git
 ## TODO: needs to be published first
 pip3 install --upgrade pycubex_parser
 ```
+
+--------------------------------------------------------------------
 
 ### Usage
 
@@ -31,66 +29,7 @@ with CubexParser(cubex_file_path) as cubex:
         region = cubex.get_region(cnode)
         cnode_values = metric_values.cnode_values(cnode.id)
 ```
-
-## `cubex` file format
-
-- `anchor.xml`
-    - contains
-        - `cnodes`
-        - `metrics`
-        - `regions`
-        - `system_tree_nodes`
-            - `locationgroups`
-                - `locations`
-- `index.0`
-    - the `0` stands for the metric ID
-    - contains
-        - a header
-            - "1"
-                - a "1" encoded as a 
-            - endianness
-            - the number of `cnodes` in the `data.0` file
-        - a list of `cnode` indices
-            - `cnode_indices = [c1, c2, ...]`
-- `data.0` 
-    - contains
-        - a header
-        - data for each `cnode_id` in `cnode_indices`
-            - contains metric values for all `locations`
-            - to retrieve the value of a particular `cnode` with `cnode_id`, and a specific `location_id`
-                - get index of `cnode_index` in `cnode_indices`
-                    - = the position of the `cnode_id` in `cnode_indices`
-                - offset in `data.0`: `cnode_index * num_locations + location_id`
-                    - the `locations` all have incrementing `location_ids`
-            - Important: the list is sorted!
-                - not in the order of the XML 
-
-## Notes
-
-- Requires at least Python version 3.5
-    - Contains `typings` as defined in [PEP 484](https://www.python.org/dev/peps/pep-0484/)
-- The `cubex` files are `tar` archives
-    - :warning:  ... when extracting them and parsing the extracted `0.data` files using the low-level `IndexParser`/`DataParser` directly,
-    they will create strange behaviour
-        - in the most cases, parsing succeeds but some edge-cases (related to endianness?) create problems
-
-## Development
-
-To publish this package, you need a [PyPi account](https://pypi.org/manage/account/) with an API token with permissions to publish this package (`pycubex_parser`).
-
-```shell
-# Install publish dependencies (once)
-python3 -m pip install --upgrade setuptools wheel twine
-
-# Build
-python3 setup.py sdist bdist_wheel
-
-# Test upload (needs account on https://test.pypi.org, not on https://pypi.org
-python3 -m twine upload --repository testpypi dist/*
-# Upload package
-python3 -m twine upload dist/*
-
-```
+--------------------------------------------------------------------
 
 ## License
 
