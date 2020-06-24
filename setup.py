@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Extra-P project",
     author_email="extra-p@lists.parallel.informatik.tu-darmstadt.de",
-    description="pyCubeR is a Python package for reading the Cube4 file format.",
+    description="pyCubexR is a Python package for reading the Cube4 file format.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/extra-p/pycubexr",
