@@ -1,10 +1,7 @@
 from glob import glob
 
-from pycuber import CubexParser
-from pycuber.utils.exceptions import MissingMetricError
-
-#"data/blast.p64.r1/profile.cubex"
-#'assets/*.r1'
+from pycubexr import CubexParser
+from pycubexr.utils.exceptions import MissingMetricError
 
 def main():
     for folder in sorted(glob('../data/one_parameter')):
