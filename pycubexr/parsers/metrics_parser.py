@@ -18,6 +18,7 @@ def extract_metric_values(
         endianness_format_char=index.endianness_format
     )
     return MetricValues(
+        metric=metric,
         cnode_indices=index.cnode_indices,
         values=values
     )

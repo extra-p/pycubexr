@@ -20,8 +20,10 @@ class CNode(object):
     def add_child(self, child: 'CNode'):
         self._children.append(child)
 
-    def get_all_children(self) -> List['CNode']:
-        cnodes = [self]
+    def get_all_children(self, with_self=True) -> List['CNode']:
+        cnodes = []
+        if with_self:
+            cnodes.append(self)
         for child in self._children:
             cnodes += child.get_all_children()
         return cnodes

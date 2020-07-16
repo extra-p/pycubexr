@@ -68,18 +68,29 @@ class CubexParser(object):
     def get_cnode(self, cnode_id: int) -> CNode:
         return [cnode for cnode in self._anchor_result.cnodes[0].get_all_children() if cnode.id == cnode_id][0]
 
+    def get_region_by_name(self, name: str):
+        return [region for region in self._anchor_result.regions if region.name == name][0]
+
+    def all_cnodes(self):
+        # TODO: is this always true?
+        assert len(self._anchor_result.cnodes) == 1
+        return self._anchor_result.cnodes[0].get_all_children()
+
+    def get_cnodes_for_region(self, region_id: int):
+        return [cnode for cnode in self.all_cnodes() if cnode.callee_region_id == region_id]
+
     def get_locations(self) -> List[Location]:
         return self._anchor_result.system_tree_nodes[0].all_locations()
-    
+
     def get_calltree(self, indent=0, cnode: CNode = None):
         if cnode is None:
             cnode = self._anchor_result.cnodes[0]
         call_tree_string = ""
         child_string = ""
-        child_string += "-"*indent + self.get_region(cnode).name
+        child_string += "-" * indent + self.get_region(cnode).name
         call_tree_string += child_string
         call_tree_string += "\n"
-        
+
         for child in cnode.get_children():
             tmp = self.get_calltree(indent + 1, cnode=child)
             if tmp is not None:
