@@ -10,3 +10,9 @@ class MissingMetricError(Exception):
 class CorruptIndexError(Exception):
     def __init__(self, message='Corrupt index.'):
         super().__init__(message)
+
+
+class InvalidConversionInstructionError(Exception):
+    def __init__(self, message="Received invalid conversion instruction. "
+                               "convert_to_exclusive and convert_to_inclusive must not be True at the same time."):
+        super().__init__(message)
