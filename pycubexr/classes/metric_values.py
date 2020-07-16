@@ -1,6 +1,7 @@
 from typing import List, Any
 
 from pycubexr.classes import CNode, Metric
+from pycubexr.classes.metric import MetricType
 
 
 class MetricValues(object):
@@ -20,19 +21,19 @@ class MetricValues(object):
     def num_locations(self):
         return int(len(self.values) / len(self.cnode_indices))
 
-    def cnode_values(self, cnode: CNode, calculate_exclusive: bool = True):
+    def cnode_values(self, cnode: CNode, convert_to_exclusive: bool = True, convert_to_inclusive: bool = False):
         assert cnode.id in self.cnode_indices
         start_index = int(self.cnode_indices.index(cnode.id) * self.num_locations())
         end_index = start_index + self.num_locations()
         values = self.values[start_index:end_index]
-        if calculate_exclusive and self.metric.metric_type == MetricType.EXCLUSIVE:
+        if convert_to_exclusive and self.metric.metric_type == MetricType.EXCLUSIVE:
             values = self._calculate_exclusive(cnode, values)
         # Copy the list instead of returning the values to prevent the user changing the internal values
         return [value for value in values]
 
     def location_value(self, cnode: CNode, location_id: int):
         assert location_id < self.num_locations()
-        return self.cnode_values(cnode.id)[location_id]
+        return self.cnode_values(cnode)[location_id]
 
     def _calculate_exclusive(self, cnode: CNode, values: List[Any]):
         # Go over all cnode children and add the metric values
@@ -43,7 +44,7 @@ class MetricValues(object):
             values = [
                 x + y
                 for x, y
-                in zip(values, self.cnode_values(child_cnode, calculate_exclusive=False))
+                in zip(values, self.cnode_values(child_cnode, convert_to_exclusive=False))
             ]
         return values
 
