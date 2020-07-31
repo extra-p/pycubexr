@@ -1,4 +1,5 @@
 import tarfile
+from gzip import GzipFile
 from tarfile import TarFile
 from typing import List, Dict
 from xml.etree import ElementTree
@@ -23,8 +24,16 @@ class CubexParser(object):
         self._cubex_file = tarfile.open(self._cubex_filename)
 
         with self._cubex_file.extractfile('anchor.xml') as anchor_file:
-            anchor = ElementTree.parse(anchor_file)
-            self._anchor_result = parse_anchor_xml(anchor)
+            xml_header = anchor_file.read(5)
+            anchor_file.seek(0, 0)
+            if xml_header != b"<?xml":
+                # if not starting with xml assume compressed
+                with GzipFile(fileobj=anchor_file)as compressed_anchor:
+                    anchor = ElementTree.parse(compressed_anchor)
+                    self._anchor_result = parse_anchor_xml(anchor)
+            else:
+                anchor = ElementTree.parse(anchor_file)
+                self._anchor_result = parse_anchor_xml(anchor)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
