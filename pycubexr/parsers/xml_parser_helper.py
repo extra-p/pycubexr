@@ -5,14 +5,14 @@ from pycubexr.classes import CNode, Location, LocationGroup, Metric, Region, Sys
 
 def parse_metric(xml_node: XMLNode):
     return Metric(
-        name=xml_node.find('uniq_name').text,
+        name=xml_node.findtext('uniq_name'),
         _id=int(xml_node.get('id')),
-        display_name=xml_node.find('disp_name').text,
-        description=xml_node.find('descr').text,
+        display_name=xml_node.findtext('disp_name'),
+        description=xml_node.findtext('descr'),
         metric_type=xml_node.get('type'),
-        data_type=xml_node.find('dtype').text,
-        units=xml_node.find('uom').text,
-        url=xml_node.find('url').text
+        data_type=xml_node.findtext('dtype'),
+        units=xml_node.findtext('uom'),
+        url=xml_node.findtext('url')
     )
 
 
@@ -28,12 +28,12 @@ def parse_region(xml_node: XMLNode):
         _id=int(xml_node.get('id')),
         begin=int(xml_node.get('begin')),
         end=int(xml_node.get('end')),
-        name=xml_node.find('name').text,
-        mangled_name=xml_node.find('mangled_name').text,
-        paradigm=xml_node.find('paradigm').text,
-        role=xml_node.find('role').text,
-        url=xml_node.find('url').text,
-        descr=xml_node.find('descr').text,
+        name=xml_node.findtext('name'),
+        mangled_name=xml_node.findtext('mangled_name'),
+        paradigm=xml_node.findtext('paradigm'),
+        role=xml_node.findtext('role'),
+        url=xml_node.findtext('url'),
+        descr=xml_node.findtext('descr'),
     )
 
 
@@ -72,18 +72,18 @@ def parse_cnodes(root: XMLNode):
 def parse_location(xml_node: XMLNode):
     return Location(
         _id=int(xml_node.get('Id')),
-        name=xml_node.find('name').text,
-        rank=xml_node.find('rank').text,
-        _type=xml_node.find('type').text
+        name=xml_node.findtext('name'),
+        rank=xml_node.findtext('rank'),
+        _type=xml_node.findtext('type')
     )
 
 
 def parse_location_group(xml_node: XMLNode):
     location_group = LocationGroup(
         _id=int(xml_node.get('Id')),
-        name=xml_node.find('name').text,
-        rank=xml_node.find('rank').text,
-        _type=xml_node.find('type').text
+        name=xml_node.findtext('name'),
+        rank=xml_node.findtext('rank'),
+        _type=xml_node.findtext('type')
     )
 
     for xml_child_node in xml_node.findall('locationgroup'):
@@ -99,7 +99,7 @@ def parse_system_tree_node(xml_node: XMLNode):
     system_tree_node = SystemTreeNode(
         _id=int(xml_node.get('Id')),
         _class=xml_node.get('class'),
-        name=xml_node.find('name').text,
+        name=xml_node.findtext('name'),
         attrs={x.get('key'): x.get('value') for x in xml_node.findall('attr')}
     )
 
