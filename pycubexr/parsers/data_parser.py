@@ -2,6 +2,7 @@ import struct
 import zlib
 from typing import List, BinaryIO, Any
 
+from pycubexr.classes.values import convert_type
 from pycubexr.utils.metric_formats import METRIC_FORMATS
 
 DATA_HEADER: bytes = b'CUBEX.DATA'
@@ -25,6 +26,9 @@ def parse_data(
     else:
         raw = data_file.read()
 
+    if data_type not in METRIC_FORMATS:
+        return []
+
     # Calculate the size for a single element
     single_value_size = struct.calcsize(METRIC_FORMATS[data_type])
 
@@ -35,8 +39,8 @@ def parse_data(
 
     # Example: the format '<100i' means to parse/"unpack" 100 integers
     unpack_format = endianness_format_char + str(num_values) + METRIC_FORMATS[data_type]
-
-    return list(struct.unpack(unpack_format, raw))
+    data = struct.unpack(unpack_format, raw)
+    return convert_type(data_type, data)
 
 
 def decompress_data(data_file: BinaryIO, endianness_format_char: str):

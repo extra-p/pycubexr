@@ -1,7 +1,9 @@
 from typing import Dict, List
 from xml.etree import ElementTree
 
+from pycubexr import DEBUG
 from pycubexr.classes import Metric, Region, CNode, SystemTreeNode
+from pycubexr.classes.metric import MetricType
 from pycubexr.parsers import xml_parser_helper
 
 
@@ -33,4 +35,61 @@ def parse_anchor_xml(root: ElementTree):
     )
     assert len(result.cnodes) == 1
     assert len(result.system_tree_nodes) == 1
+
+    _metric_tree_enumerations(result)
+    if DEBUG:
+        for cnode in result.cnodes:
+            _assign_region(cnode, result)
     return result
+
+
+def _bfs(root_list: List[CNode]):
+    visited = {}
+    queue = []
+    ctr = 0
+    for root_node in root_list:
+        visited[root_node.id] = ctr
+        ctr += 1
+        queue.append(root_node)
+
+    while queue:
+        node = queue.pop(0)
+        for child in node.get_children():
+            if child.id not in visited:
+                visited[child.id] = ctr
+                ctr += 1
+                queue.append(child)
+    return visited
+
+
+def _dfs(root_list: List[CNode]):
+    visited = {}
+    stack = []
+    ctr = 0
+    for root_node in reversed(root_list):
+        stack.append(root_node)
+
+    while stack:
+        node = stack.pop()
+        visited[node.id] = ctr
+        ctr += 1
+        for child in reversed(node.get_children()):
+            stack.append(child)
+
+    return visited
+
+
+def _metric_tree_enumerations(result):
+    dfs_enumeration = _dfs(result.cnodes)
+    bfs_enumeration = _bfs(result.cnodes)
+    for metric in result.metrics:
+        if metric.metric_type == MetricType.EXCLUSIVE:
+            metric.tree_enumeration = dfs_enumeration
+        elif metric.metric_type == MetricType.INCLUSIVE:
+            metric.tree_enumeration = bfs_enumeration
+
+
+def _assign_region(cnode, result):
+    cnode.region = [r for r in result.regions if r.id == cnode.callee_region_id][0]
+    for c in cnode.get_children():
+        _assign_region(c, result)

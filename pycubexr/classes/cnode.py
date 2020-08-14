@@ -1,5 +1,7 @@
 from typing import List
 
+from pycubexr import DEBUG
+
 
 class CNode(object):
     _children: List['CNode']
@@ -13,6 +15,8 @@ class CNode(object):
         self._children = []
         self.id = _id
         self.callee_region_id = callee_region_id
+        if DEBUG:
+            self.region = None
 
     def get_children(self):
         return self._children

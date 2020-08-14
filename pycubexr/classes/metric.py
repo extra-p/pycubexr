@@ -30,6 +30,7 @@ class Metric(object):
         self.data_type = data_type
         self.units = units
         self.url = url
+        self.tree_enumeration = None
 
     def __repr__(self):
         return 'Metric<{}>'.format(self.__dict__)
