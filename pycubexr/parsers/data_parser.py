@@ -1,3 +1,4 @@
+import re
 import struct
 import zlib
 from typing import List, BinaryIO, Any
@@ -26,21 +27,45 @@ def parse_data(
     else:
         raw = data_file.read()
 
-    if data_type not in METRIC_FORMATS:
-        return []
+    data_type, parameters, metric_format = _get_metric_format(data_type)
 
     # Calculate the size for a single element
-    single_value_size = struct.calcsize(METRIC_FORMATS[data_type])
+    single_value_size = struct.calcsize(metric_format)
 
     # Verify that the number of read bytes is divisible by the value size
     assert len(raw) % single_value_size == 0
 
     num_values = int(len(raw) / single_value_size)
+    if len(metric_format) == 1:
+        # Example: the format '<100i' means to parse/"unpack" 100 integers
+        unpack_format = endianness_format_char + str(num_values) + metric_format
+        data = struct.unpack(unpack_format, raw)
+    else:
+        unpack_format = endianness_format_char + metric_format
+        data = struct.iter_unpack(unpack_format, raw)
+    return convert_type(data_type, parameters, data)
 
-    # Example: the format '<100i' means to parse/"unpack" 100 integers
-    unpack_format = endianness_format_char + str(num_values) + METRIC_FORMATS[data_type]
-    data = struct.unpack(unpack_format, raw)
-    return convert_type(data_type, data)
+
+def _get_metric_format(data_type):
+    parameters = None
+    if '(' in data_type:
+        # data type has parameters
+        matches = re.fullmatch(r"^(.*?)\s*\(\s*(.*?)\s*\)\s*$", data_type)
+        if matches is None:
+            return None, None, None
+        data_type = matches[1]
+        if data_type not in METRIC_FORMATS:
+            return None, None, None
+        parameters = re.split(r"\s*,\s*", matches[2])
+        try:
+            metric_format = METRIC_FORMATS[data_type](*parameters)
+        except ValueError:
+            return None, None, None
+    elif data_type not in METRIC_FORMATS:
+        return None, None, None
+    else:
+        metric_format = METRIC_FORMATS[data_type]
+    return data_type, parameters, metric_format
 
 
 def decompress_data(data_file: BinaryIO, endianness_format_char: str):

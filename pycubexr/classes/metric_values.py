@@ -27,11 +27,13 @@ class MetricValues(object):
         if convert_to_inclusive and convert_to_exclusive:
             raise InvalidConversionInstructionError()
         assert not (convert_to_inclusive and convert_to_exclusive)
-        assert cnode.id in self.cnode_indices
-        cid = self.metric.tree_enumeration[cnode.id]
-        start_index = int(self.cnode_indices.index(cid) * self.num_locations())
-        end_index = start_index + self.num_locations()
-        values = self.values[start_index: end_index]  # creates copy
+        if cnode.id not in self.cnode_indices:
+            values = [0] * self.num_locations()
+        else:
+            cid = self.metric.tree_enumeration[cnode.id]
+            start_index = int(self.cnode_indices.index(cid) * self.num_locations())
+            end_index = start_index + self.num_locations()
+            values = self.values[start_index: end_index]  # creates copy
 
         must_convert = ((convert_to_exclusive and self.metric.metric_type == MetricType.INCLUSIVE)
                         or (convert_to_inclusive and self.metric.metric_type == MetricType.EXCLUSIVE))
@@ -63,8 +65,6 @@ class MetricValues(object):
         # Go over all cnode children and add the metric values
         # Does change the values array!
         for child_cnode in cnode.get_children():
-            if child_cnode.id not in self.cnode_indices:
-                continue
             child_values = self.cnode_values(child_cnode,
                                              convert_to_inclusive=True,
                                              convert_to_exclusive=False)
@@ -80,6 +80,13 @@ class MetricValues(object):
             return res.try_convert()
         else:
             return res
+
+    def mean(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
+        values = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive)
+        res = sum(values)
+        if isinstance(res, BaseValue):
+            res = res.try_convert()
+        return res / len(values)
 
     def __repr__(self):
         return 'MetricValues<{}>'.format(self.__dict__)

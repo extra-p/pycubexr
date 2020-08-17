@@ -1,25 +1,24 @@
+import copy
+import sys
 from abc import abstractmethod, ABC
-from typing import List, Dict, Type
+from inspect import signature
+from numbers import Real
+
+from typing import List, Dict, Callable, Union, Sequence, Any, cast
 
 
 class BaseValue(ABC):
     @abstractmethod
-    def add(self, other):
+    def _add(self, other):
         pass
 
     @abstractmethod
-    def sub(self, other):
+    def _sub(self, other):
         pass
 
     @abstractmethod
     def neutral(self):
         pass
-
-    def __iadd__(self, other):
-        return self.__add__(other)
-
-    def __isub__(self, other):
-        return self.__sub__(other)
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -28,13 +27,13 @@ class BaseValue(ABC):
         other = self._check(other)
         if other is None:
             return NotImplemented
-        return self.add(other)
+        return self._add(other)
 
     def __sub__(self, other):
         other = self._check(other)
         if other is None:
             return NotImplemented
-        return self.sub(other)
+        return self._sub(other)
 
     def _check(self, other):
         if not isinstance(other, type(self)):
@@ -43,11 +42,25 @@ class BaseValue(ABC):
             return None
         return other
 
+    @abstractmethod
+    def __float__(self):
+        pass
+
     def try_convert(self):
         return self
 
 
-class MinMaxValue(BaseValue, ABC):
+class ConvertsToRealValue(BaseValue, ABC):
+
+    def __float__(self):
+        return float(self.try_convert())
+
+    @abstractmethod
+    def try_convert(self):
+        pass
+
+
+class MinMaxValue(ConvertsToRealValue, ABC):
     def __init__(self, value):
         if isinstance(value, MinMaxValue):
             self.value = value.value
@@ -79,30 +92,210 @@ class MinMaxValue(BaseValue, ABC):
 
 
 class MinValue(MinMaxValue):
-    def add(self, other):
+    def _add(self, other):
         return MinValue(min(self, other))
 
-    def sub(self, other):
+    def _sub(self, other):
         return MinValue(max(self, other))
 
 
 class MaxValue(MinMaxValue):
-    def add(self, other):
+    def _add(self, other):
         return MaxValue(max(self, other))
 
-    def sub(self, other):
+    def _sub(self, other):
         return MaxValue(min(self, other))
 
 
-VALUE_MAPPING: Dict[str, Type] = {
+class ComplexValue(complex, BaseValue):
+    @classmethod
+    def __new__(cls, *args, **kwargs) -> 'ComplexValue':
+        args = [args[0]] + list(args[1])
+        return cast(ComplexValue, super().__new__(*args, **kwargs))
+
+    def __add__(self, other) -> 'ComplexValue':
+        return self._add(other)
+
+    def __sub__(self, other) -> 'ComplexValue':
+        return self._sub(other)
+
+    def _add(self, other):
+        val = complex.__add__(self, other)
+        if val is NotImplemented:
+            return NotImplemented
+        return ComplexValue((val,))
+
+    def _sub(self, other):
+        val = complex.__sub__(self, other)
+        if val is NotImplemented:
+            return NotImplemented
+        return ComplexValue((val,))
+
+    def neutral(self):
+        return 0
+
+    def __float__(self):
+        return abs(self)
+
+
+class TauAtomicValue(ConvertsToRealValue):
+    def __init__(self, value):
+        if isinstance(value, TauAtomicValue):
+            self.n = value.n
+            self.min = MinValue(value.min)
+            self.max = MinValue(value.max)
+            self.sum = value.sum
+            self.sum2 = value.sum2
+        else:
+            n, min_, max_, sum_, sum2 = value
+            self.n = n
+            self.min = MinValue(min_)
+            self.max = MinValue(max_)
+            self.sum = sum_
+            self.sum2 = sum2
+
+    def _sub(self, other):
+        return TauAtomicValue((
+            self.n - other.n,
+            self.min - other.min,
+            self.max - other.max,
+            self.sum - other.sum,
+            self.sum2 - other.sum2,
+        ))
+
+    def neutral(self):
+        return TauAtomicValue((
+            0,
+            self.min,
+            self.max,
+            0,
+            0,
+        ))
+
+    def _add(self, other):
+        return TauAtomicValue((
+            self.n + other.n,
+            self.min + other.min,
+            self.max + other.max,
+            self.sum + other.sum,
+            self.sum2 + other.sum2,
+        ))
+
+    def try_convert(self):
+        if self.n == 0:
+            return self.sum / (self.n + 1e-256)
+        else:
+            return self.sum / self.n
+
+
+class RateValue(ConvertsToRealValue):
+    def __init__(self, value):
+        if isinstance(value, RateValue):
+            self.main = value.main
+            self.duration = value.duration
+        else:
+            self.main, self.duration = value
+
+    def _sub(self, other):
+        return RateValue((
+            self.main - other.main,
+            self.duration - other.duration
+        ))
+
+    def neutral(self):
+        return RateValue((0, 0))
+
+    def _add(self, other):
+        return TauAtomicValue((
+            self.main + other.main,
+            self.duration + other.duration
+        ))
+
+    def try_convert(self):
+        if self.duration == 0:
+            return sys.float_info.max if self.main > 0 else -sys.float_info.max
+        else:
+            return self.main / self.duration
+
+
+class NValue(ConvertsToRealValue):
+    def __init__(self, value):
+        if isinstance(value, NValue):
+            self.values = copy.copy(value.values)
+        else:
+            self.values = value
+
+    @property
+    def n(self):
+        return len(self.values)
+
+    def _sub(self, other):
+        assert self.n == other.n
+        return NValue(
+            [x - y for x, y in zip(self.values, other.values)]
+        )
+
+    def neutral(self):
+        return NValue(
+            [0] * self.n
+        )
+
+    def _add(self, other):
+        assert self.n == other.n
+        return NValue(
+            [x + y for x, y in zip(self.values, other.values)]
+        )
+
+    def try_convert(self):
+        return sum(self.values)
+
+
+# class HistogramValue(BaseValue):
+#     def __init__(self, value):
+#         if isinstance(value, HistogramValue):
+#             self.min, self.max = value.min, value.max
+#             self.values = copy.copy(value.values)
+#         else:
+#             self.min, self.max = value[0:2]
+#             self.values = value[2:]
+#
+#     @property
+#     def n(self):
+#         return len(self.values)
+#
+#     def sub(self, other):
+#         return self
+#
+#     def neutral(self):
+#         return HistogramValue(
+#             [-math.inf, math.inf]
+#         )
+#
+#     def add(self, other):
+#         return HistogramValue(
+#             [min(self.min, other.min), max(self.max, other.max)] +
+#             self.values + other.values
+#         )
+
+
+VALUE_MAPPING: Dict[str, Callable[[Union[Sequence[Any], Any]], Any]] = {
     'MAXDOUBLE': MaxValue,
     'MINDOUBLE': MinValue,
+    'COMPLEX': ComplexValue,
+    'TAU_ATOMIC': TauAtomicValue,
+    'RATE': RateValue,
+    'NDOUBLES': NValue,
+    # 'HISTOGRAM': HistogramValue
 }
 
 
-def convert_type(type, values) -> List:
+def convert_type(type: str, parameters: tuple, values: List[Union[tuple, Real]]) -> List[Union[BaseValue, Real]]:
     if type in VALUE_MAPPING:
         val_cls = VALUE_MAPPING[type]
-        return [val_cls(v) for v in values]
+        if 'type_params' in signature(val_cls).parameters:
+            # noinspection PyArgumentList
+            return [val_cls(v, type_params=parameters) for v in values]
+        else:
+            return [val_cls(v) for v in values]
     else:
         return list(values)
