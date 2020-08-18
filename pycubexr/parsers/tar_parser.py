@@ -1,4 +1,5 @@
 import tarfile
+from functools import lru_cache
 from gzip import GzipFile
 from tarfile import TarFile
 from typing import List, Dict
@@ -8,6 +9,7 @@ from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
 from pycubexr.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
 from pycubexr.parsers.metrics_parser import extract_metric_values
 from pycubexr.utils.exceptions import MissingMetricError
+from utils.caching import cached_property
 
 
 class CubexParser(object):
@@ -68,18 +70,34 @@ class CubexParser(object):
     def get_metrics(self):
         return self._anchor_result.metrics
 
+    @cached_property
+    def _metrics_dict(self):
+        metrics = {}
+
+        def walk_tree(childs):
+            for metric in childs:
+                metrics[metric.name] = metric
+                walk_tree(metric.childs)
+
+        walk_tree(self._anchor_result.metrics)
+        return metrics
+
+    def all_metrics(self):
+        return list(self._metrics_dict.values())
+
     def get_metric_by_name(self, metric_name: str) -> Metric:
-        return [metric for metric in self._anchor_result.metrics if metric.name == metric_name][0]
+        return self._metrics_dict[metric_name]
 
     def get_region(self, cnode: CNode) -> Region:
         return [region for region in self._anchor_result.regions if region.id == cnode.callee_region_id][0]
 
     def get_cnode(self, cnode_id: int) -> CNode:
-        return [cnode for cnode in self._anchor_result.cnodes[0].get_all_children() if cnode.id == cnode_id][0]
+        return [cnode for cnode in self.all_cnodes() if cnode.id == cnode_id][0]
 
     def get_region_by_name(self, name: str):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
+    @lru_cache()
     def all_cnodes(self):
         # TODO: is this always true?
         assert len(self._anchor_result.cnodes) == 1

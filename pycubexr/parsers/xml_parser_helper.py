@@ -1,4 +1,4 @@
-from xml.etree.ElementTree import Element as XMLNode
+from xml.etree.ElementTree import Element as XMLNode, ElementTree
 
 from pycubexr.classes import CNode, Location, LocationGroup, Metric, Region, SystemTreeNode
 
@@ -12,14 +12,17 @@ def parse_metric(xml_node: XMLNode):
         metric_type=xml_node.get('type'),
         data_type=xml_node.findtext('dtype'),
         units=xml_node.findtext('uom'),
-        url=xml_node.findtext('url')
+        url=xml_node.findtext('url'),
+        childs=parse_metrics(xml_node)
     )
 
 
 def parse_metrics(root: XMLNode):
+    if isinstance(root, ElementTree):
+        root = root.find('metrics')
     return [
         parse_metric(metric_xml_node) for metric_xml_node
-        in root.find('metrics').findall('metric')
+        in root.findall('metric')
     ]
 
 

@@ -43,26 +43,27 @@ def parse_anchor_xml(root: ElementTree):
     return result
 
 
-def _bfs(root_list: List[CNode]):
+def _wide_enumeration(root_list: List[CNode]):
+    # does not implement breadth first search
     visited = {}
-    queue = []
+    stack = []
     ctr = 0
+
     for root_node in root_list:
         visited[root_node.id] = ctr
         ctr += 1
-        queue.append(root_node)
-
-    while queue:
-        node = queue.pop(0)
-        for child in node.get_children():
-            if child.id not in visited:
+        stack.append(root_node)
+        while stack:
+            node = stack.pop()
+            for child in node.get_children():
                 visited[child.id] = ctr
                 ctr += 1
-                queue.append(child)
+            for child in reversed(node.get_children()):
+                stack.append(child)
     return visited
 
 
-def _dfs(root_list: List[CNode]):
+def _deep_enumeration(root_list: List[CNode]):
     visited = {}
     stack = []
     ctr = 0
@@ -80,13 +81,18 @@ def _dfs(root_list: List[CNode]):
 
 
 def _metric_tree_enumerations(result):
-    dfs_enumeration = _dfs(result.cnodes)
-    bfs_enumeration = _bfs(result.cnodes)
-    for metric in result.metrics:
-        if metric.metric_type == MetricType.EXCLUSIVE:
-            metric.tree_enumeration = dfs_enumeration
-        elif metric.metric_type == MetricType.INCLUSIVE:
-            metric.tree_enumeration = bfs_enumeration
+    deep_enumeration = _deep_enumeration(result.cnodes)
+    wide_enumeration = _wide_enumeration(result.cnodes)
+
+    def walk_tree(childs):
+        for metric in childs:
+            if metric.metric_type == MetricType.EXCLUSIVE:
+                metric.tree_enumeration = deep_enumeration
+            elif metric.metric_type == MetricType.INCLUSIVE:
+                metric.tree_enumeration = wide_enumeration
+            walk_tree(metric.childs)
+
+    walk_tree(result.metrics)
 
 
 def _assign_region(cnode, result):

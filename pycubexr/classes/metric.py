@@ -1,3 +1,5 @@
+from typing import List
+
 from pycubexr.utils.metric_formats import METRIC_FORMATS
 
 
@@ -18,7 +20,8 @@ class Metric(object):
             metric_type: str,
             data_type: str,
             units: str,
-            url: str
+            url: str,
+            childs: List
     ):
         assert hasattr(MetricType, metric_type)
         assert data_type in METRIC_FORMATS
@@ -31,6 +34,15 @@ class Metric(object):
         self.units = units
         self.url = url
         self.tree_enumeration = None
+        self.childs = childs
 
     def __repr__(self):
         return 'Metric<{}>'.format(self.__dict__)
+
+    def get_all_children(self, with_self=True) -> List['Metric']:
+        metrics = []
+        if with_self:
+            metrics.append(self)
+        for child in self.childs:
+            metrics += child.get_all_children()
+        return metrics
