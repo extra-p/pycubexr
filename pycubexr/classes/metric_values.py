@@ -1,3 +1,4 @@
+import warnings
 from typing import List, Any
 
 from pycubexr.classes import CNode, Metric
@@ -24,9 +25,16 @@ class MetricValues(object):
         return int(len(self.values) / len(self.cnode_indices))
 
     def cnode_values(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
-        if convert_to_inclusive and convert_to_exclusive:
-            raise InvalidConversionInstructionError()
-        assert not (convert_to_inclusive and convert_to_exclusive)
+        if isinstance(cnode, int):
+            warnings.warn('Calling with Cnode ID is deprecated use Cnode directly.', DeprecationWarning)
+            if convert_to_inclusive or convert_to_exclusive:
+                raise InvalidConversionInstructionError('Conversion is not supported when passing a Cnode ID.')
+            cnode = CNode(_id=cnode, callee_region_id=-1)
+        else:
+            if convert_to_inclusive and convert_to_exclusive:
+                raise InvalidConversionInstructionError()
+            assert not (convert_to_inclusive and convert_to_exclusive)
+            
         cid = self.metric.tree_enumeration[cnode.id]
         if cid not in self.cnode_indices:
             values = [0] * self.num_locations()

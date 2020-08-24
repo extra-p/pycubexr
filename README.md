@@ -48,7 +48,7 @@ with CubexParser(cubex_file_path) as cubex:
             region_name = region.name
             
             # return the measurement values for all mpi processes for the current metric and callpath
-            cnode_values = metric_values.cnode_values(cnode.id)
+            cnode_values = metric_values.cnode_values(cnode)
 ```
 
 Not all .cubex files must contain measurement values for all metrics for each callpath. This is especially true for MPI functions such as MPI_Waitall. In some cases, metrics can be missing. Use the `MissingMetricError` to deal with these exceptions.
@@ -63,16 +63,16 @@ with CubexParser(cubex_file_path) as cubex:
     for metric in cubex.get_metrics():
     
         try:
-            metric_values = parsed.get_metric_values(metric=metric)
+            metric_values = cubex.get_metric_values(metric=metric)
             
             for callpath_id in range(len(metric_values.cnode_indices)):
                 
                 cnode = cubex.get_cnode(metric_values.cnode_indices[callpath_id])
                 
                 # return only a specific number of measurement values for the current metric and callpath
-                cnode_values = metric_values.cnode_values(cnode.id)[:5]
+                cnode_values = metric_values.cnode_values(cnode)[:5]
                 
-                region = parsed.get_region(cnode)
+                region = cubex.get_region(cnode)
                 
                 # print the data read from the file
                 print('\t' + '-' * 100)

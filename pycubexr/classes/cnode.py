@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from pycubexr import DEBUG
+from pycubexr.classes.region import Region
 
 
 class CNode(object):
@@ -15,8 +15,7 @@ class CNode(object):
         self._children = []
         self.id = _id
         self.callee_region_id = callee_region_id
-        if DEBUG:
-            self.region = None
+        self.region: Optional[Region] = None
 
     def get_children(self):
         return self._children

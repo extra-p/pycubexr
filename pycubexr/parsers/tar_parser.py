@@ -89,19 +89,19 @@ class CubexParser(object):
         return self._metrics_dict[metric_name]
 
     def get_region(self, cnode: CNode) -> Region:
-        return [region for region in self._anchor_result.regions if region.id == cnode.callee_region_id][0]
+        return self._anchor_result.regions_by_id[cnode.callee_region_id]
 
     def get_cnode(self, cnode_id: int) -> CNode:
         return [cnode for cnode in self.all_cnodes() if cnode.id == cnode_id][0]
 
+    def get_root_cnodes(self) -> List[CNode]:
+        return self._anchor_result.cnodes
+
     def get_region_by_name(self, name: str):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
-    @lru_cache()
     def all_cnodes(self):
-        # TODO: is this always true?
-        assert len(self._anchor_result.cnodes) == 1
-        return self._anchor_result.cnodes[0].get_all_children()
+        return self._anchor_result.all_cnodes
 
     def get_cnodes_for_region(self, region_id: int):
         return [cnode for cnode in self.all_cnodes() if cnode.callee_region_id == region_id]
@@ -134,5 +134,6 @@ class CubexParser(object):
         for child in cnode.get_children():
             self.print_calltree(indent + 1, cnode=child)
 
+    @lru_cache()
     def _tar_file_members(self) -> List[str]:
         return [x.name for x in self._cubex_file.getmembers()]

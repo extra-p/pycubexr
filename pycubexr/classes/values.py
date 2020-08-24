@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC
 from inspect import signature
 from numbers import Real
 
-from typing import List, Dict, Callable, Union, Sequence, Any, cast
+from typing import List, Dict, Callable, Union, Sequence, Any, cast, Iterable
 
 
 class BaseValue(ABC):
@@ -86,6 +86,7 @@ class MinMaxValue(ConvertsToRealValue, ABC):
 
     def __repr__(self):
         return f"{type(self).__name__}({self.value})"
+        return "{}({})".format(type(self).__name__, self.value)
 
     def try_convert(self):
         return self.value
@@ -289,9 +290,9 @@ VALUE_MAPPING: Dict[str, Callable[[Union[Sequence[Any], Any]], Any]] = {
 }
 
 
-def convert_type(type: str, parameters: tuple, values: List[Union[tuple, Real]]) -> List[Union[BaseValue, Real]]:
-    if type in VALUE_MAPPING:
-        val_cls = VALUE_MAPPING[type]
+def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Real]]) -> List[Union[BaseValue, Real]]:
+    if type_ in VALUE_MAPPING:
+        val_cls = VALUE_MAPPING[type_]
         if 'type_params' in signature(val_cls).parameters:
             # noinspection PyArgumentList
             return [val_cls(v, type_params=parameters) for v in values]
