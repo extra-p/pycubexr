@@ -1,16 +1,22 @@
 import unittest
 from pathlib import Path
+from unittest import SkipTest
 
 from pycubexr import CubexParser
+from pycubexr.utils.exceptions import MissingMetricError
 
 
-class TestMetricValuesSummary(unittest.TestCase):
+class TestMetricValuesTrace(unittest.TestCase):
     cubex: CubexParser = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        cubex_file_path = Path("../data/summary.cubex").resolve()
-        cls.cubex = CubexParser(cubex_file_path).__enter__()
+        try:
+            cubex_file_path = Path("../data/cube_samples/trace.cubex").resolve()
+            cls.cubex = CubexParser(cubex_file_path).__enter__()
+            cls.all_cnodes = list(sorted(cls.cubex.all_cnodes(), key=lambda c: c.id))
+        except FileNotFoundError as err:
+            raise SkipTest("Required test file was not found.") from err
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -21,7 +27,7 @@ class TestMetricValuesSummary(unittest.TestCase):
         metric_values = self.cubex.get_metric_values(metric)
         # iterate over all callpaths in cubex file
         cnode_values = []
-        for cnode in self.cubex.all_cnodes():
+        for cnode in self.all_cnodes:
             # return the measurement values for all mpi processes for the current metric and callpath
             cnode_values.append(metric_values.value(cnode, convert_to_exclusive, convert_to_inclusive))
         return cnode_values
@@ -1298,25 +1304,9 @@ class TestMetricValuesSummary(unittest.TestCase):
         for correct, cnode_values in zip(correct_values, metric_values):
             self.assertAlmostEqual(correct, cnode_values)
 
-    def test_pthread_time_exclusive(self):
-        correct_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ]
-        metric_values = self.get_values_for_metric('pthread_time', convert_to_exclusive=True)
-        for correct, cnode_values in zip(correct_values, metric_values):
-            self.assertAlmostEqual(correct, cnode_values)
-
-    def test_pthread_time_inclusive(self):
-        correct_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ]
-        metric_values = self.get_values_for_metric('pthread_time', convert_to_inclusive=True)
-        for correct, cnode_values in zip(correct_values, metric_values):
-            self.assertAlmostEqual(correct, cnode_values)
+    def test_pthread_time(self):
+        self.assertRaises(MissingMetricError, self.get_values_for_metric, 'pthread_time', convert_to_exclusive=True)
+        self.assertRaises(MissingMetricError, self.get_values_for_metric, 'pthread_time', convert_to_inclusive=True)
 
     def test_pthread_management_exclusive(self):
         correct_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -2075,8 +2065,7 @@ class TestMetricValuesSummary(unittest.TestCase):
                           0, 0, 12162375680, 12162375680, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559319040, 0, 0, 559319040, 0,
                           559319040, 0, 0, 0, 0, 0, 0, 0, ]
         metric_values = self.get_values_for_metric('bytes_sent', convert_to_inclusive=True)
-        for correct, cnode_values in zip(correct_values, metric_values):
-            self.assertAlmostEqual(correct, cnode_values)
+        self.assertListEqual(correct_values, metric_values)
 
     def test_bytes_rcvd_exclusive(self):
         correct_values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 140389079040, 0, 0, 0, 0, 0, 0, 0, 0,

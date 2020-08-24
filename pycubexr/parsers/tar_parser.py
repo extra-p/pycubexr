@@ -8,8 +8,8 @@ from xml.etree import ElementTree
 from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
 from pycubexr.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
 from pycubexr.parsers.metrics_parser import extract_metric_values
+from pycubexr.utils.caching import cached_property
 from pycubexr.utils.exceptions import MissingMetricError
-from utils.caching import cached_property
 
 
 class CubexParser(object):

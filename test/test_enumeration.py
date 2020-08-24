@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from unittest import SkipTest
 
 from pycubexr import CubexParser
 
@@ -31,8 +32,11 @@ class TestEnumeration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cubex_file_path = Path("../data/summary.cubex").resolve()
-        cls.cubex = CubexParser(cubex_file_path).__enter__()
+        try:
+            cubex_file_path = Path("../data/cube_samples/summary.cubex").resolve()
+            cls.cubex = CubexParser(cubex_file_path).__enter__()
+        except FileNotFoundError as err:
+            raise SkipTest("Required test file was not found.") from err
 
     @classmethod
     def tearDownClass(cls) -> None:

@@ -27,10 +27,10 @@ class MetricValues(object):
         if convert_to_inclusive and convert_to_exclusive:
             raise InvalidConversionInstructionError()
         assert not (convert_to_inclusive and convert_to_exclusive)
-        if cnode.id not in self.cnode_indices:
+        cid = self.metric.tree_enumeration[cnode.id]
+        if cid not in self.cnode_indices:
             values = [0] * self.num_locations()
         else:
-            cid = self.metric.tree_enumeration[cnode.id]
             start_index = int(self.cnode_indices.index(cid) * self.num_locations())
             end_index = start_index + self.num_locations()
             values = self.values[start_index: end_index]  # creates copy
