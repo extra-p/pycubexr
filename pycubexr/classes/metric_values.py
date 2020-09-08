@@ -1,4 +1,5 @@
 import warnings
+from functools import lru_cache
 from typing import List, Any
 
 from pycubexr.classes import CNode, Metric
@@ -18,9 +19,10 @@ class MetricValues(object):
     ):
         self.metric = metric
         self.values = values
-        self.cnode_indices = cnode_indices
+        self.cnode_indices = {cid: i for i, cid in enumerate(cnode_indices)}
         assert len(self.values) % len(self.cnode_indices) == 0
 
+    @lru_cache
     def num_locations(self):
         return int(len(self.values) / len(self.cnode_indices))
 
@@ -34,12 +36,12 @@ class MetricValues(object):
             if convert_to_inclusive and convert_to_exclusive:
                 raise InvalidConversionInstructionError()
             assert not (convert_to_inclusive and convert_to_exclusive)
-            
+
         cid = self.metric.tree_enumeration[cnode.id]
         if cid not in self.cnode_indices:
             values = [0] * self.num_locations()
         else:
-            start_index = int(self.cnode_indices.index(cid) * self.num_locations())
+            start_index = int(self.cnode_indices[cid] * self.num_locations())
             end_index = start_index + self.num_locations()
             values = self.values[start_index: end_index]  # creates copy
 

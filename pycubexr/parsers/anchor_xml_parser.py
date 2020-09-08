@@ -23,7 +23,7 @@ class AnchorXMLParseResult(object):
         self.cnodes = cnodes
         self.system_tree_nodes = system_tree_nodes
         self.regions_by_id = {r.id: r for r in regions}
-        self.all_cnodes = [cnode for root_cnode in cnodes for cnode in root_cnode.get_all_children()]
+        self.all_cnodes = {cnode.id: cnode for root_cnode in cnodes for cnode in root_cnode.get_all_children()}
 
 
 def parse_anchor_xml(root: ElementTree):
@@ -38,7 +38,7 @@ def parse_anchor_xml(root: ElementTree):
     assert len(result.system_tree_nodes) == 1
 
     _metric_tree_enumerations(result)
-    for cnode in result.all_cnodes:
+    for cnode in result.all_cnodes.values():
         cnode.region = result.regions_by_id[cnode.callee_region_id]
     return result
 

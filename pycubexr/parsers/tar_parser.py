@@ -92,7 +92,7 @@ class CubexParser(object):
         return self._anchor_result.regions_by_id[cnode.callee_region_id]
 
     def get_cnode(self, cnode_id: int) -> CNode:
-        return [cnode for cnode in self.all_cnodes() if cnode.id == cnode_id][0]
+        return self._anchor_result.all_cnodes.get(cnode_id)
 
     def get_root_cnodes(self) -> List[CNode]:
         return self._anchor_result.cnodes
@@ -101,7 +101,7 @@ class CubexParser(object):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
     def all_cnodes(self):
-        return self._anchor_result.all_cnodes
+        return list(self._anchor_result.all_cnodes.values())
 
     def get_cnodes_for_region(self, region_id: int):
         return [cnode for cnode in self.all_cnodes() if cnode.callee_region_id == region_id]

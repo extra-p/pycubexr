@@ -1,7 +1,6 @@
 import copy
 import sys
 from abc import abstractmethod, ABC
-from inspect import signature
 from numbers import Real
 
 from typing import List, Dict, Callable, Union, Sequence, Any, cast, Iterable
@@ -61,11 +60,10 @@ class ConvertsToRealValue(BaseValue, ABC):
 
 
 class MinMaxValue(ConvertsToRealValue, ABC):
+    __slots__ = ['value']
+
     def __init__(self, value):
-        if isinstance(value, MinMaxValue):
-            self.value = value.value
-        else:
-            self.value = value
+        self.value = value
 
     def neutral(self):
         return self
@@ -86,7 +84,10 @@ class MinMaxValue(ConvertsToRealValue, ABC):
 
     def __repr__(self):
         return f"{type(self).__name__}({self.value})"
-        return "{}({})".format(type(self).__name__, self.value)
+
+    def __float__(self):
+        # reimplemented for performance reasons
+        return self.value
 
     def try_convert(self):
         return self.value
@@ -94,18 +95,30 @@ class MinMaxValue(ConvertsToRealValue, ABC):
 
 class MinValue(MinMaxValue):
     def _add(self, other):
-        return MinValue(min(self, other))
+        value = min(self, other)
+        if isinstance(value, MinMaxValue):
+            value = value.value
+        return MinValue(value)
 
     def _sub(self, other):
-        return MinValue(max(self, other))
+        value = max(self, other)
+        if isinstance(value, MinMaxValue):
+            value = value.value
+        return MinValue(value)
 
 
 class MaxValue(MinMaxValue):
     def _add(self, other):
-        return MaxValue(max(self, other))
+        value = max(self, other)
+        if isinstance(value, MinMaxValue):
+            value = value.value
+        return MaxValue(value)
 
     def _sub(self, other):
-        return MaxValue(min(self, other))
+        value = min(self, other)
+        if isinstance(value, MinMaxValue):
+            value = value.value
+        return MaxValue(value)
 
 
 class ComplexValue(complex, BaseValue):
@@ -293,10 +306,12 @@ VALUE_MAPPING: Dict[str, Callable[[Union[Sequence[Any], Any]], Any]] = {
 def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Real]]) -> List[Union[BaseValue, Real]]:
     if type_ in VALUE_MAPPING:
         val_cls = VALUE_MAPPING[type_]
-        if 'type_params' in signature(val_cls).parameters:
-            # noinspection PyArgumentList
-            return [val_cls(v, type_params=parameters) for v in values]
-        else:
-            return [val_cls(v) for v in values]
+        # if 'type_params' in signature(val_cls).parameters:
+        #     # noinspection PyArgumentList
+        #     return [val_cls(v, type_params=parameters) for v in values]
+        # else:
+        return list(map(val_cls, values))
+    elif isinstance(values, List):
+        return values
     else:
         return list(values)
