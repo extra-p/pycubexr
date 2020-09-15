@@ -1,5 +1,4 @@
 import tarfile
-from functools import lru_cache
 from gzip import GzipFile
 from tarfile import TarFile
 from typing import List, Dict
@@ -24,6 +23,7 @@ class CubexParser(object):
 
     def __enter__(self):
         self._cubex_file = tarfile.open(self._cubex_filename)
+        self._tar_file_member_list = [x.name for x in self._cubex_file.getmembers()]
 
         with self._cubex_file.extractfile('anchor.xml') as anchor_file:
             xml_header = anchor_file.read(5)
@@ -39,11 +39,13 @@ class CubexParser(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._metric_values.clear()
         self._cubex_file.close()
 
     def get_metric_values(
             self,
-            metric: Metric
+            metric: Metric,
+            cache=True
     ) -> MetricValues:
         if metric.id in self._metric_values:
             return self._metric_values[metric.id]
@@ -63,8 +65,8 @@ class CubexParser(object):
             )
 
             assert metric_values.num_locations() == len(self.get_locations())
-
-            self._metric_values[metric.id] = metric_values
+            if cache:
+                self._metric_values[metric.id] = metric_values
             return metric_values
 
     def get_metrics(self):
@@ -134,6 +136,5 @@ class CubexParser(object):
         for child in cnode.get_children():
             self.print_calltree(indent + 1, cnode=child)
 
-    @lru_cache()
     def _tar_file_members(self) -> List[str]:
-        return [x.name for x in self._cubex_file.getmembers()]
+        return self._tar_file_member_list

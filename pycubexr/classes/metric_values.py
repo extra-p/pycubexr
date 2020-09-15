@@ -1,5 +1,4 @@
 import warnings
-from functools import lru_cache
 from typing import List, Any
 
 from pycubexr.classes import CNode, Metric
@@ -20,11 +19,11 @@ class MetricValues(object):
         self.metric = metric
         self.values = values
         self.cnode_indices = {cid: i for i, cid in enumerate(cnode_indices)}
+        self._num_locations = int(len(self.values) / len(self.cnode_indices))
         assert len(self.values) % len(self.cnode_indices) == 0
 
-    @lru_cache
     def num_locations(self):
-        return int(len(self.values) / len(self.cnode_indices))
+        return self._num_locations
 
     def cnode_values(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
         if isinstance(cnode, int):
