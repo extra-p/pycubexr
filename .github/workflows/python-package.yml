@@ -36,10 +36,10 @@ jobs:
     - name: Test with pytest
       run: |
         cd test
-        pytest . --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml --cov=com --cov-report=xml --cov-report=html
+        pytest . --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.html --cov=com --cov-report=html
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
         name: pytest-results-${{ matrix.python-version }}
-        path: /home/runner/work/pycubexr/pycubexr/test/junit/test-results-${{ matrix.python-version }}.xml
+        path: /home/runner/work/pycubexr/pycubexr/test/junit/test-results-${{ matrix.python-version }}.html
       if: ${{ always() }}
