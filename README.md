@@ -6,6 +6,7 @@
 [![PyPI - License](https://img.shields.io/pypi/l/pycubexr?style=plastic)](https://badge.fury.io/py/pycubexr)
 ![GitHub issues](https://img.shields.io/github/issues/extra-p/pycubexr?style=plastic)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/extra-p/pycubexr?style=plastic)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/extra-p/pycubexr/pycubexr?style=plastic)
 
 pyCubexR is a Python package for reading the [Cube4](https://www.scalasca.org/scalasca/software/cube-4.x/download.html) (.cubex) file format. Cube is used as a performance report explorer for Scalasca and Score-P. It is used as a generic tool for displaying a multi-dimensional performance space consisting of the dimensions (i) performance metric, (ii) call path, and (iii) system resource. Each dimension can be represented as a tree, where non-leaf nodes of the tree can be collapsed or expanded to achieve the desired level of granularity. The Cube4 (.cubex) data format is provided for Cube files produced with the [Score-P](https://www.vi-hps.org/projects/score-p) performance instrumentation and measurement infrastructure or the [Scalasca version 2.x](https://www.scalasca.org/scalasca/software/scalasca-2.x/download.html) trace analyzer (and other compatible tools). 
 
