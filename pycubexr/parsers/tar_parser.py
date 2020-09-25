@@ -64,10 +64,14 @@ class CubexParser(object):
                 data_file=data_file
             )
 
-            assert metric_values.num_locations() == len(self.get_locations())
+            assert metric_values.num_locations() == self._num_locations
             if cache:
                 self._metric_values[metric.id] = metric_values
             return metric_values
+
+    @cached_property
+    def _num_locations(self):
+        return len(self.get_locations())
 
     def get_metrics(self):
         return self._anchor_result.metrics
