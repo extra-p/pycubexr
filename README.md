@@ -12,7 +12,7 @@ pyCubexR is a Python package for reading the [Cube4](https://www.scalasca.org/sc
 
 For additional information about the Cube file format and related software, see the [pyCubexR report](./pyCubexR.pdf).
 
-For questions regarding pyCubexR please send a message to <extra-p@lists.parallel.informatik.tu-darmstadt.de>.
+For questions regarding pyCubexR please send a message to <extra-p-support@lists.parallel.informatik.tu-darmstadt.de>.
 
 ## Installation
 
