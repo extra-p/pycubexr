@@ -16,6 +16,7 @@ class CNode(object):
         self.id = _id
         self.callee_region_id = callee_region_id
         self.region: Optional[Region] = None
+        self.parameters={}
 
     def get_children(self):
         return self._children

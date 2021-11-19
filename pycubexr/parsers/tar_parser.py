@@ -106,7 +106,7 @@ class CubexParser(object):
     def get_region_by_name(self, name: str):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
-    def all_cnodes(self):
+    def all_cnodes(self) -> List[CNode]:
         return list(self._anchor_result.all_cnodes.values())
 
     def get_cnodes_for_region(self, region_id: int):

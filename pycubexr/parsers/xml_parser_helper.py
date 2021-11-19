@@ -62,6 +62,18 @@ def parse_cnode(xml_node: XMLNode):
     for cnode_xml_child in xml_node.findall('cnode'):
         cnode_child = parse_cnode(cnode_xml_child)
         cnode.add_child(cnode_child)
+    for parameter_xml in xml_node.findall('parameter'):
+        partype = parameter_xml.get('partype')
+        parkey = parameter_xml.get('parkey')
+        parvalue = parameter_xml.get('parvalue')
+        if partype == 'numeric':
+            try:
+                parvalue = int(parvalue)
+            except ValueError:
+                parvalue = float(parvalue)
+        elif partype == "string":
+            pass
+        cnode.parameters[parkey] = parvalue
     return cnode
 
 
