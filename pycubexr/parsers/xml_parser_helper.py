@@ -37,6 +37,7 @@ def parse_region(xml_node: XMLNode):
         role=xml_node.findtext('role'),
         url=xml_node.findtext('url'),
         descr=xml_node.findtext('descr'),
+        mod=xml_node.get("mod"),
     )
 
 

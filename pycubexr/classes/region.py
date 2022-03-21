@@ -11,7 +11,8 @@ class Region(object):
             paradigm: str,
             role: str,
             url: str,
-            descr: str
+            descr: str,
+            mod: str
     ):
         self.id = _id
         self.begin = begin
@@ -22,6 +23,7 @@ class Region(object):
         self.role = role
         self.url = url
         self.description = descr
+        self.mod = mod
 
     def __repr__(self):
         return 'Region<{}>'.format(self.__dict__)
