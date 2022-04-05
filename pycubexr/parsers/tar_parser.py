@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 import tarfile
 from gzip import GzipFile
 from tarfile import TarFile
+from typing import List, Dict, Tuple
 from xml.etree import ElementTree
 
 from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
@@ -16,7 +15,7 @@ class CubexParser(object):
     _cubex_file: TarFile
     _cubex_filename: str
     _anchor_result: AnchorXMLParseResult
-    _metric_values: dict[tuple[int, bool], MetricValues]
+    _metric_values: Dict[Tuple[int, bool], MetricValues]
 
     def __init__(self, cubex_filename: str):
         self._cubex_filename = cubex_filename
@@ -111,19 +110,19 @@ class CubexParser(object):
     def get_cnode(self, cnode_id: int) -> CNode:
         return self._anchor_result.all_cnodes.get(cnode_id)
 
-    def get_root_cnodes(self) -> list[CNode]:
+    def get_root_cnodes(self) -> List[CNode]:
         return self._anchor_result.cnodes
 
     def get_region_by_name(self, name: str):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
-    def all_cnodes(self) -> list[CNode]:
+    def all_cnodes(self) -> List[CNode]:
         return list(self._anchor_result.all_cnodes.values())
 
     def get_cnodes_for_region(self, region_id: int):
         return [cnode for cnode in self.all_cnodes() if cnode.callee_region_id == region_id]
 
-    def get_locations(self) -> list[Location]:
+    def get_locations(self) -> List[Location]:
         return self._anchor_result.system_tree_nodes[0].all_locations()
 
     def get_calltree(self, indent=0, cnode: CNode = None):
@@ -151,5 +150,5 @@ class CubexParser(object):
         for child in cnode.get_children():
             self.print_calltree(indent + 1, cnode=child)
 
-    def _tar_file_members(self) -> list[str]:
+    def _tar_file_members(self) -> List[str]:
         return self._tar_file_member_list
