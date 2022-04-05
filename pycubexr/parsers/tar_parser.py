@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import tarfile
 from gzip import GzipFile
 from tarfile import TarFile
-from typing import List, Dict
 from xml.etree import ElementTree
 
 from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
@@ -15,7 +16,7 @@ class CubexParser(object):
     _cubex_file: TarFile
     _cubex_filename: str
     _anchor_result: AnchorXMLParseResult
-    _metric_values: Dict[int, MetricValues]
+    _metric_values: dict[tuple[int, bool], MetricValues]
 
     def __init__(self, cubex_filename: str):
         self._cubex_filename = cubex_filename
@@ -30,7 +31,7 @@ class CubexParser(object):
             anchor_file.seek(0, 0)
             if xml_header != b"<?xml":
                 # if not starting with xml assume compressed
-                with GzipFile(fileobj=anchor_file)as compressed_anchor:
+                with GzipFile(fileobj=anchor_file) as compressed_anchor:
                     anchor = ElementTree.parse(compressed_anchor)
                     self._anchor_result = parse_anchor_xml(anchor)
             else:
@@ -45,10 +46,19 @@ class CubexParser(object):
     def get_metric_values(
             self,
             metric: Metric,
-            cache=True
+            cache: bool = True, *,
+            allow_full_uint64_values: bool = False
     ) -> MetricValues:
-        if metric.id in self._metric_values:
-            return self._metric_values[metric.id]
+        """
+        Retrieves the values for the specified metric.
+        :param metric: The specified metric
+        :param cache: Enables caching of the values to accelerate future accesses.
+        :param allow_full_uint64_values: Enables the usage of UINT64 values greater than 0xFFFF_FFFF_FFFF_FBFF.
+            Disabled by default to match the CubeLib behavior.
+        :return: The measured values for the specified metric.
+        """
+        if (metric.id, allow_full_uint64_values) in self._metric_values:
+            return self._metric_values[metric.id, allow_full_uint64_values]
 
         index_file_name = '{}.index'.format(metric.id)
         data_file_name = '{}.data'.format(metric.id)
@@ -61,12 +71,13 @@ class CubexParser(object):
             metric_values = extract_metric_values(
                 metric=metric,
                 index_file=index_file,
-                data_file=data_file
+                data_file=data_file,
+                allow_full_uint64_values=allow_full_uint64_values
             )
 
             assert metric_values.num_locations() == self._num_locations
             if cache:
-                self._metric_values[metric.id] = metric_values
+                self._metric_values[metric.id, allow_full_uint64_values] = metric_values
             return metric_values
 
     @cached_property
@@ -100,19 +111,19 @@ class CubexParser(object):
     def get_cnode(self, cnode_id: int) -> CNode:
         return self._anchor_result.all_cnodes.get(cnode_id)
 
-    def get_root_cnodes(self) -> List[CNode]:
+    def get_root_cnodes(self) -> list[CNode]:
         return self._anchor_result.cnodes
 
     def get_region_by_name(self, name: str):
         return [region for region in self._anchor_result.regions if region.name == name][0]
 
-    def all_cnodes(self) -> List[CNode]:
+    def all_cnodes(self) -> list[CNode]:
         return list(self._anchor_result.all_cnodes.values())
 
     def get_cnodes_for_region(self, region_id: int):
         return [cnode for cnode in self.all_cnodes() if cnode.callee_region_id == region_id]
 
-    def get_locations(self) -> List[Location]:
+    def get_locations(self) -> list[Location]:
         return self._anchor_result.system_tree_nodes[0].all_locations()
 
     def get_calltree(self, indent=0, cnode: CNode = None):
@@ -140,5 +151,5 @@ class CubexParser(object):
         for child in cnode.get_children():
             self.print_calltree(indent + 1, cnode=child)
 
-    def _tar_file_members(self) -> List[str]:
+    def _tar_file_members(self) -> list[str]:
         return self._tar_file_member_list

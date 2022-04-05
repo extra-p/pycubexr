@@ -9,13 +9,15 @@ def extract_metric_values(
         *,
         metric: Metric,
         index_file: BinaryIO,
-        data_file: BinaryIO
+        data_file: BinaryIO,
+        allow_full_uint64_values: bool = False
 ) -> MetricValues:
     index = parse_index(index_file=index_file)
     values = parse_data(
         data_file=data_file,
         data_type=metric.data_type,
-        endianness_format_char=index.endianness_format
+        endianness_format_char=index.endianness_format,
+        allow_full_uint64_values=allow_full_uint64_values
     )
     return MetricValues(
         metric=metric,

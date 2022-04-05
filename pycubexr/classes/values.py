@@ -311,7 +311,8 @@ VALUE_MAPPING: Dict[str, Callable[[Union[Sequence[Any], Any]], Any]] = {
 MAX_UINT64_DOUBLE = 0xFFFF_FFFF_FFFF_FBFF  # Maximal UINT64 that can be cast to double and back without exceeding UINT64
 
 
-def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Real]]) -> List[Union[BaseValue, Real]]:
+def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Real]],
+                 allow_full_uint64_values: bool = False) -> List[Union[BaseValue, Real]]:
     if type_ in VALUE_MAPPING:
         val_cls = VALUE_MAPPING[type_]
         # if 'type_params' in signature(val_cls).parameters:
@@ -320,13 +321,13 @@ def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Re
         # else:
         return list(map(val_cls, values))
     elif isinstance(values, List):
-        if type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
+        if not allow_full_uint64_values and type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
             # simulates undefined behavior when casting uint64_t to double to uint64_t in cubelib
             for i in range(len(values)):
                 if values[i] > MAX_UINT64_DOUBLE:
                     values[i] = 0
         return values
-    elif type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
+    elif not allow_full_uint64_values and type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
         # simulates undefined behavior when casting uint64_t to double to uint64_t in cubelib
         return [0 if value > MAX_UINT64_DOUBLE else value for value in values]
     else:

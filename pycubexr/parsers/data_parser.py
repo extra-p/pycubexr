@@ -16,7 +16,8 @@ def parse_data(
         # From the anchor.xml. NOT the Python struct data types, e.g., "i"
         data_type: str,
         # Either "<" or ">"
-        endianness_format_char: str
+        endianness_format_char: str,
+        allow_full_uint64_values: bool = False
 ) -> List[Any]:
     # Verify the data file header
     header = data_file.read(len(DATA_HEADER))
@@ -43,7 +44,7 @@ def parse_data(
     else:
         unpack_format = endianness_format_char + metric_format
         data = struct.iter_unpack(unpack_format, raw)
-    return convert_type(data_type, parameters, data)
+    return convert_type(data_type, parameters, data, allow_full_uint64_values)
 
 
 def _get_metric_format(data_type):

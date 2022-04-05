@@ -38,6 +38,13 @@ class TestHWCounterMeasurements1(unittest.TestCase):
             self.assertGreaterEqual(cnode_value, 0)
             self.assertLess(cnode_value, 0xFFFFFFFFFFFFFFFF)
 
+    def test_PAPI_L2_DCM_allow_full_uint64(self):
+        metric = self.cubex.get_metric_by_name('PAPI_L2_DCM')
+        metric_values = self.cubex.get_metric_values(metric, allow_full_uint64_values=True)
+        values = [metric_values.value(cnode) for cnode in self.cubex.all_cnodes()]
+        self.assertTrue(all(v >= 0 for v in values))
+        self.assertTrue(any(v >= 0xFFFF_FFFF_FFFF_FFFF for v in values))
+
 
 class TestHWCounterMeasurements2(unittest.TestCase):
 
