@@ -5,7 +5,7 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="pycubexr",
-    version="1.1.0",
+    version="1.2.0",
     author="Extra-P project",
     author_email="extra-p@lists.parallel.informatik.tu-darmstadt.de",
     description="pyCubexR is a Python package for reading the Cube4 file format.",
@@ -20,6 +20,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
