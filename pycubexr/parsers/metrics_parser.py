@@ -17,7 +17,7 @@ def extract_metric_values(
         data_file=data_file,
         data_type=metric.data_type,
         endianness_format_char=index.endianness_format,
-        allow_full_uint64_values=allow_full_uint64_values
+        allow_full_uint64_values=allow_full_uint64_values,
     )
     return MetricValues(
         metric=metric,

@@ -1,267 +1,131 @@
 import copy
 import sys
 from abc import abstractmethod, ABC
-from numbers import Real
+from numbers import Real, Number
 
 from typing import List, Dict, Callable, Union, Sequence, Any, cast, Iterable
 
+import numpy as np
 
-class BaseValue(ABC):
-    @abstractmethod
-    def _add(self, other):
-        pass
 
-    @abstractmethod
-    def _sub(self, other):
-        pass
+class CubeValues:
 
-    @abstractmethod
-    def neutral(self):
-        pass
-
-    def __radd__(self, other):
-        return self.__add__(other)
+    def __init__(self, values):
+        self._values: np.ArrayLike = values
 
     def __add__(self, other):
-        other = self._check(other)
-        if other is None:
-            return NotImplemented
-        return self._add(other)
-
-    def __sub__(self, other):
-        other = self._check(other)
-        if other is None:
-            return NotImplemented
-        return self._sub(other)
-
-    def _check(self, other):
-        if not isinstance(other, type(self)):
-            if other == 0:
-                return self.neutral()
-            return None
-        return other
-
-    @abstractmethod
-    def __float__(self):
-        pass
-
-    def try_convert(self):
-        return self
-
-
-class ConvertsToRealValue(BaseValue, ABC):
-
-    def __float__(self):
-        return float(self.try_convert())
-
-    @abstractmethod
-    def try_convert(self):
-        pass
-
-
-class MinMaxValue(ConvertsToRealValue, ABC):
-    __slots__ = ['value']
-
-    def __init__(self, value):
-        self.value = value
-
-    def neutral(self):
-        return self
-
-    def __eq__(self, other):
-        if self is other:
-            return True
-        elif isinstance(other, MinMaxValue):
-            return self.value == other.value
+        if isinstance(other, type(self)):
+            return type(self)(self._values + other._values)
         else:
             return NotImplemented
 
-    def __lt__(self, other):
-        if isinstance(other, MinMaxValue):
-            return self.value < other.value
+    def __sub__(self, other):
+        if isinstance(other, type(self)):
+            return type(self)(self._values - other._values)
         else:
             return NotImplemented
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.value})"
+        return f"{type(self).__name__}({self._values})"
 
-    def __float__(self):
-        # reimplemented for performance reasons
-        return self.value
+    def __len__(self):
+        return len(self._values)
 
-    def try_convert(self):
-        return self.value
+    def __getitem__(self, item):
+        return type(self)(self._values[item])
 
+    def sum(self):
+        return type(self)(np.sum(self._values))
 
-class MinValue(MinMaxValue):
-    def _add(self, other):
-        value = min(self, other)
-        if isinstance(value, MinMaxValue):
-            value = value.value
-        return MinValue(value)
+    def mean(self):
+        return type(self)(np.mean(self._values))
 
-    def _sub(self, other):
-        value = max(self, other)
-        if isinstance(value, MinMaxValue):
-            value = value.value
-        return MinValue(value)
+    def astype(self, type):
+        return self._values.astype(type)
+
+    def copy(self):
+        return type(self)(self._values.copy())
 
 
-class MaxValue(MinMaxValue):
-    def _add(self, other):
-        value = max(self, other)
-        if isinstance(value, MinMaxValue):
-            value = value.value
-        return MaxValue(value)
+class MinMaxValues(CubeValues, ABC):
 
-    def _sub(self, other):
-        value = min(self, other)
-        if isinstance(value, MinMaxValue):
-            value = value.value
-        return MaxValue(value)
-
-
-class ComplexValue(complex, BaseValue):
     @classmethod
-    def __new__(cls, *args, **kwargs) -> 'ComplexValue':
-        args = [args[0]] + list(args[1])
-        return cast(ComplexValue, super().__new__(*args, **kwargs))
+    @abstractmethod
+    def agg_command(cls, a, b, out=None):
+        pass
 
-    def __add__(self, other) -> 'ComplexValue':
-        return self._add(other)
-
-    def __sub__(self, other) -> 'ComplexValue':
-        return self._sub(other)
-
-    def _add(self, other):
-        val = complex.__add__(self, other)
-        if val is NotImplemented:
+    def _check(self, other):
+        if all(other._values == 0):
+            return self
+        if not isinstance(other, type(self)):
             return NotImplemented
-        return ComplexValue((val,))
-
-    def _sub(self, other):
-        val = complex.__sub__(self, other)
-        if val is NotImplemented:
-            return NotImplemented
-        return ComplexValue((val,))
-
-    def neutral(self):
-        return 0
-
-    def __float__(self):
-        return abs(self)
-
-
-class TauAtomicValue(ConvertsToRealValue):
-    def __init__(self, value):
-        if isinstance(value, TauAtomicValue):
-            self.n = value.n
-            self.min = MinValue(value.min)
-            self.max = MinValue(value.max)
-            self.sum = value.sum
-            self.sum2 = value.sum2
         else:
-            n, min_, max_, sum_, sum2 = value
-            self.n = n
-            self.min = MinValue(min_)
-            self.max = MinValue(max_)
-            self.sum = sum_
-            self.sum2 = sum2
+            return None
 
-    def _sub(self, other):
-        return TauAtomicValue((
-            self.n - other.n,
-            self.min - other.min,
-            self.max - other.max,
-            self.sum - other.sum,
-            self.sum2 - other.sum2,
-        ))
+    def __add__(self, other):
+        other_values = self._check(other)
+        if other_values is not None:
+            return other_values
+        return type(self)(self.agg_command(self._values, other._values))
 
-    def neutral(self):
-        return TauAtomicValue((
-            0,
-            self.min,
-            self.max,
-            0,
-            0,
-        ))
+    def __sub__(self, other):
+        other_values = self._check(other)
+        if other_values is not None:
+            return other_values
+        return type(self)(self.agg_command(self._values, other._values))
 
-    def _add(self, other):
-        return TauAtomicValue((
-            self.n + other.n,
-            self.min + other.min,
-            self.max + other.max,
-            self.sum + other.sum,
-            self.sum2 + other.sum2,
-        ))
+    def __iadd__(self, other):
+        other_values = self._check(other)
+        if other_values is not None:
+            return other_values
+        self.agg_command(self._values, other._values, out=self._values)
+        return self
 
-    def try_convert(self):
-        if self.n == 0:
-            return self.sum / (self.n + 1e-256)
-        else:
-            return self.sum / self.n
+    def __isub__(self, other):
+        other_values = self._check(other)
+        if other_values is not None:
+            return other_values
+        self.agg_command(self._values, other._values, out=self._values)
+        return self
 
 
-class RateValue(ConvertsToRealValue):
-    def __init__(self, value):
-        if isinstance(value, RateValue):
-            self.main = value.main
-            self.duration = value.duration
-        else:
-            self.main, self.duration = value
+class MinValues(MinMaxValues):
+    agg_command = np.minimum
 
-    def _sub(self, other):
-        return RateValue((
-            self.main - other.main,
-            self.duration - other.duration
-        ))
+    def sum(self):
+        return MinValues(self._values.min())
 
-    def neutral(self):
-        return RateValue((0, 0))
-
-    def _add(self, other):
-        return TauAtomicValue((
-            self.main + other.main,
-            self.duration + other.duration
-        ))
-
-    def try_convert(self):
-        if self.duration == 0:
-            return sys.float_info.max if self.main > 0 else -sys.float_info.max
-        else:
-            return self.main / self.duration
+    def mean(self):
+        return MinValues(self._values.min())
 
 
-class NValue(ConvertsToRealValue):
-    def __init__(self, value):
-        if isinstance(value, NValue):
-            self.values = copy.copy(value.values)
-        else:
-            self.values = value
+class MaxValues(MinMaxValues):
+    agg_command = np.maximum
 
-    @property
-    def n(self):
-        return len(self.values)
+    def sum(self):
+        return MaxValues(self._values.max())
 
-    def _sub(self, other):
-        assert self.n == other.n
-        return NValue(
-            [x - y for x, y in zip(self.values, other.values)]
-        )
+    def mean(self):
+        return MaxValues(self._values.max())
 
-    def neutral(self):
-        return NValue(
-            [0] * self.n
-        )
 
-    def _add(self, other):
-        assert self.n == other.n
-        return NValue(
-            [x + y for x, y in zip(self.values, other.values)]
-        )
+class ComplexValues(CubeValues):
 
-    def try_convert(self):
-        return sum(self.values)
+    def astype(self, type):
+        if type != complex:
+            return np.absolute(self._values).astype(type)
+        return self._values.astype(type)
+
+
+class TauAtomicValues(CubeValues):
+    def astype(self, type):
+        raise NotImplementedError()
+
+
+class RateValues(CubeValues):
+
+    def astype(self, type):
+        raise NotImplementedError()
 
 
 # class HistogramValue(BaseValue):
@@ -293,12 +157,12 @@ class NValue(ConvertsToRealValue):
 
 
 VALUE_MAPPING: Dict[str, Callable[[Union[Sequence[Any], Any]], Any]] = {
-    'MAXDOUBLE': MaxValue,
-    'MINDOUBLE': MinValue,
-    'COMPLEX': ComplexValue,
-    'TAU_ATOMIC': TauAtomicValue,
-    'RATE': RateValue,
-    'NDOUBLES': NValue,
+    'MAXDOUBLE': MaxValues,
+    'MINDOUBLE': MinValues,
+    'COMPLEX': ComplexValues,
+    'TAU_ATOMIC': TauAtomicValues,
+    'RATE': RateValues,
+    # 'NDOUBLES': NValues,
     # 'HISTOGRAM': HistogramValue
 }
 
@@ -312,23 +176,24 @@ MAX_UINT64_DOUBLE = 0xFFFF_FFFF_FFFF_FBFF  # Maximal UINT64 that can be cast to 
 
 
 def convert_type(type_: str, parameters: tuple, values: Iterable[Union[tuple, Real]],
-                 allow_full_uint64_values: bool = False) -> List[Union[BaseValue, Real]]:
+                 allow_full_uint64_values: bool = False) -> List[Union[CubeValues, Real]]:
     if type_ in VALUE_MAPPING:
         val_cls = VALUE_MAPPING[type_]
         # if 'type_params' in signature(val_cls).parameters:
         #     # noinspection PyArgumentList
         #     return [val_cls(v, type_params=parameters) for v in values]
         # else:
-        return list(map(val_cls, values))
-    elif isinstance(values, List):
+        return val_cls(values)
+    elif isinstance(values, np.ndarray):
         if not allow_full_uint64_values and type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
-            # simulates undefined behavior when casting uint64_t to double to uint64_t in cubelib
-            for i in range(len(values)):
-                if values[i] > MAX_UINT64_DOUBLE:
-                    values[i] = 0
+            if any(values > MAX_UINT64_DOUBLE):
+                # simulates undefined behavior when casting uint64_t to double to uint64_t in cubelib
+                values = np.require(values, requirements='W')
+                values[values > MAX_UINT64_DOUBLE] = 0
         return values
     elif not allow_full_uint64_values and type_ == 'UINT64' or type_ == 'UNSIGNED INTEGER':
         # simulates undefined behavior when casting uint64_t to double to uint64_t in cubelib
         return [0 if value > MAX_UINT64_DOUBLE else value for value in values]
     else:
+
         return list(values)

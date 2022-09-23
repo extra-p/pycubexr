@@ -30,7 +30,7 @@ class TestHWCounterMeasurements1(unittest.TestCase):
         metric_values = self.get_values_for_metric('PAPI_L2_DCM', convert_to_exclusive=True)
         for cnode_value in metric_values:
             self.assertGreaterEqual(cnode_value, 0)
-            self.assertLess(cnode_value, 0xFFFFFFFFFFFFFFFF)
+            self.assertLess(cnode_value, 0xFFFF_FFFF_FFFF_FFFF)
 
     def test_PAPI_L2_DCM_inclusive(self):
         metric_values = self.get_values_for_metric('PAPI_L2_DCM', convert_to_inclusive=True)
@@ -40,7 +40,12 @@ class TestHWCounterMeasurements1(unittest.TestCase):
 
     def test_PAPI_L2_DCM_allow_full_uint64(self):
         metric = self.cubex.get_metric_by_name('PAPI_L2_DCM')
-        metric_values = self.cubex.get_metric_values(metric, allow_full_uint64_values=True)
+        metric_values = self.cubex.get_metric_values(metric,allow_full_uint64_values=True)
+        self.assertTrue(any(metric_values.values >= 0xFFFF_FFFF_FFFF_FFFF))
+        check = False
+        for cnode in self.cubex.all_cnodes():
+            check = check or any(metric_values.cnode_values(cnode) >= 0xFFFF_FFFF_FFFF_FFFF)
+        self.assertTrue(check)
         values = [metric_values.value(cnode) for cnode in self.cubex.all_cnodes()]
         self.assertTrue(all(v >= 0 for v in values))
         self.assertTrue(any(v >= 0xFFFF_FFFF_FFFF_FFFF for v in values))

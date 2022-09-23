@@ -3,6 +3,9 @@ import struct
 import zlib
 from typing import List, BinaryIO, Any
 
+import numpy
+import numpy as np
+
 from pycubexr.classes.values import convert_type
 from pycubexr.utils.metric_formats import METRIC_FORMATS
 
@@ -17,7 +20,8 @@ def parse_data(
         data_type: str,
         # Either "<" or ">"
         endianness_format_char: str,
-        allow_full_uint64_values: bool = False
+        allow_full_uint64_values: bool = False,
+        use_numpy=False
 ) -> List[Any]:
     # Verify the data file header
     header = data_file.read(len(DATA_HEADER))
@@ -28,22 +32,11 @@ def parse_data(
     else:
         raw = data_file.read()
 
-    data_type, parameters, metric_format = _get_metric_format(data_type)
+    data_type, parameters, binary_type = _get_metric_format(data_type)
 
-    # Calculate the size for a single element
-    single_value_size = struct.calcsize(metric_format)
+    dtype = np.dtype(binary_type).newbyteorder(endianness_format_char)
 
-    # Verify that the number of read bytes is divisible by the value size
-    assert len(raw) % single_value_size == 0
-
-    num_values = int(len(raw) / single_value_size)
-    if len(metric_format) == 1:
-        # Example: the format '<100i' means to parse/"unpack" 100 integers
-        unpack_format = endianness_format_char + str(num_values) + metric_format
-        data = struct.unpack(unpack_format, raw)
-    else:
-        unpack_format = endianness_format_char + metric_format
-        data = struct.iter_unpack(unpack_format, raw)
+    data = np.frombuffer(raw, dtype=dtype)
     return convert_type(data_type, parameters, data, allow_full_uint64_values)
 
 

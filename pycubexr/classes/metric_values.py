@@ -1,9 +1,12 @@
+import logging
 import warnings
 from typing import List, Any
 
+import numpy as np
+
 from pycubexr.classes import CNode, Metric
 from pycubexr.classes.metric import MetricType
-from pycubexr.classes.values import BaseValue
+from pycubexr.classes.values import CubeValues
 from pycubexr.utils.exceptions import InvalidConversionInstructionError
 
 
@@ -14,7 +17,7 @@ class MetricValues(object):
             *,
             metric: Metric,
             cnode_indices: List[int],
-            values: List[Any]
+            values: np.ndarray
     ):
         self.metric = metric
         self.values = values
@@ -38,11 +41,11 @@ class MetricValues(object):
 
         cid = self.metric.tree_enumeration[cnode.id]
         if cid not in self.cnode_indices:
-            values = [0] * self.num_locations()
+            values = np.zeros(self.num_locations(), dtype=self.values.dtype)
         else:
             start_index = int(self.cnode_indices[cid] * self.num_locations())
             end_index = start_index + self.num_locations()
-            values = self.values[start_index: end_index]  # creates copy
+            values = self.values[start_index: end_index]  # creates no copy
 
         must_convert = ((convert_to_exclusive and self.metric.metric_type == MetricType.INCLUSIVE)
                         or (convert_to_inclusive and self.metric.metric_type == MetricType.EXCLUSIVE))
@@ -70,32 +73,65 @@ class MetricValues(object):
         for i, y in enumerate(b):
             a[i] -= y
 
-    def _convert_values(self, cnode: CNode, values: List[Any], to_inclusive: bool = True):
+    @staticmethod
+    def _detect_negative_overflow(a, b):
+        if np.issubdtype(a.dtype, np.unsignedinteger):
+            check = a < b
+            if np.any(check):
+                b = b.copy()
+                b[check] = a[check]
+        elif np.issubdtype(a.dtype, np.signedinteger):
+            pre_check = a > 0
+            check = np.full_like(pre_check, False, dtype=bool)
+            check[~pre_check] = -b[~pre_check] < np.iinfo(a.dtype).min - a[~pre_check]
+            check[pre_check] |= -b[pre_check] > np.iinfo(a.dtype).max - a[pre_check]
+            if np.any(check):
+                if not np.issubdtype(a.dtype, np.int64):
+                    bigger_type = np.min_scalar_type(int(np.iinfo(a.dtype).min) - 1)
+                    b = b.astype(bigger_type, copy=False)
+                else:
+                    b = b.copy()
+                    b[~pre_check & check] = -(np.iinfo(a.dtype).min - a[~pre_check & check])
+                    b[pre_check & check] = -(np.iinfo(a.dtype).max - a[pre_check & check])
+        return b
+
+    def _convert_values(self, cnode: CNode, values: np.ndarray, to_inclusive: bool = True):
         # Go over all cnode children and add the metric values
-        # Does change the values array!
+        values = values.copy()
         for child_cnode in cnode.get_children():
             child_values = self.cnode_values(child_cnode,
                                              convert_to_inclusive=True,
                                              convert_to_exclusive=False)
             if to_inclusive:
-                self._iadd(values, child_values)
+                values += child_values
             else:
-                self._isub(values, child_values)
+                if isinstance(values, np.ndarray) and np.issubdtype(values.dtype, np.integer):
+                    child_values = self._detect_negative_overflow(values, child_values)
+                values -= child_values
         return values
 
     def value(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
-        res = sum(self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive))
-        if isinstance(res, BaseValue):
-            return res.try_convert()
+        res = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive)
+        sum_ = res.sum()
+        if isinstance(res, np.ndarray) and np.issubdtype(res.dtype, np.integer):
+            if res.max() > np.iinfo(res.dtype).max // len(res):
+                logging.info("Used overflow prevention for {0} of {1}".format(self.metric.name, cnode.region.name))
+                # Overflow prevention, really slow
+                sum_ = 0
+                for r in res:
+                    sum_ += int(r)
+
+        if isinstance(sum_, CubeValues):
+            return sum_.astype(float)
         else:
-            return res
+            return sum_
 
     def mean(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
-        values = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive)
-        res = sum(values)
-        if isinstance(res, BaseValue):
-            res = res.try_convert()
-        return res / len(values)
+        res = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive).mean()
+        if isinstance(res, CubeValues):
+            return res.astype(float)
+        else:
+            return res
 
     def __repr__(self):
         return 'MetricValues<{}>'.format(self.__dict__)
