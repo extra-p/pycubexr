@@ -3,13 +3,9 @@ import setuptools
 with open("README.md") as fh:
     long_description = fh.read()
 
-info = {}
-with open("pycubexr/__init__.py") as fp:
-    exec(fp.read(), info)
-
 setuptools.setup(
     name="pycubexr",
-    version=info['__version__'],
+    version="2.0.0-alpha",
     author="Extra-P project",
     author_email="extra-p@lists.parallel.informatik.tu-darmstadt.de",
     description="pyCubexR is a Python package for reading the Cube4 file format.",
