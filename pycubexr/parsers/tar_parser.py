@@ -7,7 +7,9 @@ from xml.etree import ElementTree
 from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
 from pycubexr.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
 from pycubexr.parsers.metrics_parser import extract_metric_values
+
 from pycubexr.utils.caching import cached_property
+from pycubexr.utils.custom_tarinfo import TarInfoWithoutCheck
 from pycubexr.utils.exceptions import MissingMetricError
 
 
@@ -22,7 +24,11 @@ class CubexParser(object):
         self._metric_values = {}
 
     def __enter__(self):
-        self._cubex_file = tarfile.open(self._cubex_filename)
+        try:
+            self._cubex_file = tarfile.open(self._cubex_filename)
+        except tarfile.ReadError:
+            self._cubex_file = tarfile.open(self._cubex_filename, tarinfo=TarInfoWithoutCheck)
+
         self._tar_file_member_list = [x.name for x in self._cubex_file.getmembers()]
 
         with self._cubex_file.extractfile('anchor.xml') as anchor_file:
