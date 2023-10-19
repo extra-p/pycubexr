@@ -62,18 +62,6 @@ class MetricValues(object):
         )[location_id]
 
     @staticmethod
-    def _iadd(a, b):
-        assert len(a) == len(b)
-        for i, y in enumerate(b):
-            a[i] += y
-
-    @staticmethod
-    def _isub(a, b):
-        assert len(a) == len(b)
-        for i, y in enumerate(b):
-            a[i] -= y
-
-    @staticmethod
     def _detect_negative_overflow(a, b):
         if np.issubdtype(a.dtype, np.unsignedinteger):
             check = a < b
