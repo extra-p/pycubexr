@@ -98,7 +98,7 @@ class MetricValues(object):
                 values -= child_values
         return values
 
-    def value(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
+    def value(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
         res = self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive)
         sum_ = res.sum()
         if isinstance(res, np.ndarray) and np.issubdtype(res.dtype, np.integer):
@@ -114,7 +114,7 @@ class MetricValues(object):
         else:
             return sum_
 
-    def mean(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
+    def mean(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
         res = self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive).mean()
         if isinstance(res, CubeValues):
             return res.astype(float)
