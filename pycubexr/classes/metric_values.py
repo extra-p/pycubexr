@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import List, Any
+from typing import List
 
 import numpy as np
 
@@ -99,7 +99,7 @@ class MetricValues(object):
         return values
 
     def value(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
-        res = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive)
+        res = self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive)
         sum_ = res.sum()
         if isinstance(res, np.ndarray) and np.issubdtype(res.dtype, np.integer):
             if res.max() > np.iinfo(res.dtype).max // len(res):
@@ -115,7 +115,7 @@ class MetricValues(object):
             return sum_
 
     def mean(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
-        res = self.cnode_values(cnode, convert_to_inclusive, convert_to_exclusive).mean()
+        res = self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive).mean()
         if isinstance(res, CubeValues):
             return res.astype(float)
         else:
