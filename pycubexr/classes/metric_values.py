@@ -83,14 +83,14 @@ class MetricValues(object):
                 self._isub(values, child_values)
         return values
 
-    def value(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
+    def value(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
         res = sum(self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive))
         if isinstance(res, BaseValue):
             return res.try_convert()
         else:
             return res
 
-    def mean(self, cnode: CNode, convert_to_inclusive=False, convert_to_exclusive=False):
+    def mean(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False):
         values = self.cnode_values(cnode, convert_to_exclusive, convert_to_inclusive)
         res = sum(values)
         if isinstance(res, BaseValue):
