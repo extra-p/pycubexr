@@ -2,8 +2,25 @@ Released version 2.0
 ====================
 
 - Uses NumPy to accelerate parsing and calculation.
-- *Breaking change:* returns data as NumPy arrays
+- **Breaking change:** returns data as NumPy arrays
+
+
 - Includes a fix to read CUBE files written by CubeWriter 4.8 that sometimes come with incorrect checksums.
+- Includes a bugfix, that switches the paramaters of `convert_to_inclusive` and `convert_to_exclusive` in the `value`
+  and `mean` function of `MetricValues`, so that the names and the functions match.  
+  The new and also correct signatures are now:  
+  `mean(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False)`  
+  `value(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False)`
+
+Released version 1.2.2
+======================
+
+Includes a bugfix, that switches the paramaters of `convert_to_inclusive` and `convert_to_exclusive` in the `value`
+and `mean` function of `MetricValues`, so that the names and the functions match.
+
+The new and also correct signatures are now:
+`mean(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False)`
+`value(self, cnode: CNode, convert_to_exclusive: bool = False, convert_to_inclusive: bool = False)`
 
 Released version 1.2.1
 ======================
