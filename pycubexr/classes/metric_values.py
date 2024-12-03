@@ -39,7 +39,7 @@ class MetricValues(object):
                 raise InvalidConversionInstructionError()
             assert not (convert_to_inclusive and convert_to_exclusive)
 
-        cid = self.metric.tree_enumeration[cnode.id]
+        cid = cnode.id
         if cid not in self.cnode_indices:
             values = np.zeros(self.num_locations(), dtype=self.values.dtype)
         else:

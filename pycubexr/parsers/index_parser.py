@@ -8,9 +8,9 @@ INDEX_HEADER: bytes = b'CUBEX.INDEX'
 
 class IndexParseResult(object):
 
-    def __init__(self, endianness_format: str, cnode_indices: List[Any]):
+    def __init__(self, endianness_format: str, tree_indices: List[Any]):
         self.endianness_format = endianness_format
-        self.cnode_indices = cnode_indices
+        self.tree_indices = tree_indices
 
 
 def parse_index(index_file: BinaryIO) -> IndexParseResult:
@@ -45,10 +45,10 @@ def parse_index(index_file: BinaryIO) -> IndexParseResult:
             "The size of the index list should be equal to (size of one index value * number of nodes)."
         )
 
-    cnode_indices = list(struct.unpack('{}{}i'.format(endianness_format, n_nodes), raw_index))
-    assert len(cnode_indices) > 0
+    tree_indices = list(struct.unpack('{}{}i'.format(endianness_format, n_nodes), raw_index))
+    assert len(tree_indices) > 0
     assert index_file.peek() == b''
     return IndexParseResult(
         endianness_format=endianness_format,
-        cnode_indices=cnode_indices
+        tree_indices=tree_indices
     )

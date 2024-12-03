@@ -1,3 +1,4 @@
+import warnings
 from typing import List
 
 from pycubexr.utils.metric_formats import METRIC_FORMATS
@@ -33,8 +34,15 @@ class Metric(object):
         self.data_type = data_type
         self.units = units
         self.url = url
-        self.tree_enumeration = None
+        self.tree_index_to_cid_map: dict = None
         self.childs = childs
+
+    @property
+    def tree_enumeration(self):
+        warnings.warn('Accessing the tree enumeration is deprecated. Use cnode ids directly.', DeprecationWarning)
+        if self.tree_index_to_cid_map is None:
+            return None
+        return {cid: tid for tid, cid in self.tree_index_to_cid_map.items()}
 
     def __repr__(self):
         return 'Metric<{}>'.format(self.__dict__)
