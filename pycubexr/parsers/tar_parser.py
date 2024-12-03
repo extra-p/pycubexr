@@ -1,13 +1,13 @@
 import tarfile
 from gzip import GzipFile
+from os import PathLike
 from tarfile import TarFile
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from xml.etree import ElementTree
 
 from pycubexr.classes import Metric, MetricValues, Region, CNode, Location
 from pycubexr.parsers.anchor_xml_parser import parse_anchor_xml, AnchorXMLParseResult
 from pycubexr.parsers.metrics_parser import extract_metric_values
-
 from pycubexr.utils.caching import cached_property
 from pycubexr.utils.custom_tarinfo import TarInfoWithoutCheck
 from pycubexr.utils.exceptions import MissingMetricError
@@ -15,11 +15,11 @@ from pycubexr.utils.exceptions import MissingMetricError
 
 class CubexParser(object):
     _cubex_file: TarFile
-    _cubex_filename: str
+    _cubex_filename: Union[str, PathLike]
     _anchor_result: AnchorXMLParseResult
     _metric_values: Dict[Tuple[int, bool], MetricValues]
 
-    def __init__(self, cubex_filename: str):
+    def __init__(self, cubex_filename: Union[str, PathLike]):
         self._cubex_filename = cubex_filename
         self._metric_values = {}
 

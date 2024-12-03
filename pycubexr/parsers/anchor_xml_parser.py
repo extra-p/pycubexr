@@ -50,13 +50,13 @@ def _wide_enumeration(root_list: List[CNode]):
     ctr = 0
 
     for root_node in root_list:
-        visited[root_node.id] = ctr
+        visited[ctr] = root_node.id
         ctr += 1
         stack.append(root_node)
         while stack:
             node = stack.pop()
             for child in node.get_children():
-                visited[child.id] = ctr
+                visited[ctr] = child.id
                 ctr += 1
             for child in reversed(node.get_children()):
                 stack.append(child)
@@ -72,7 +72,7 @@ def _deep_enumeration(root_list: List[CNode]):
 
     while stack:
         node = stack.pop()
-        visited[node.id] = ctr
+        visited[ctr] = node.id
         ctr += 1
         for child in reversed(node.get_children()):
             stack.append(child)
@@ -87,9 +87,9 @@ def _metric_tree_enumerations(result):
     def walk_tree(childs):
         for metric in childs:
             if metric.metric_type == MetricType.EXCLUSIVE:
-                metric.tree_enumeration = deep_enumeration
+                metric.tree_index_to_cid_map = deep_enumeration
             elif metric.metric_type == MetricType.INCLUSIVE:
-                metric.tree_enumeration = wide_enumeration
+                metric.tree_index_to_cid_map = wide_enumeration
             walk_tree(metric.childs)
 
     walk_tree(result.metrics)

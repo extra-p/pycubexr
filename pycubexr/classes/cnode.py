@@ -16,7 +16,7 @@ class CNode(object):
         self.id = _id
         self.callee_region_id = callee_region_id
         self.region: Optional[Region] = None
-        self.parameters={}
+        self.parameters = {}
 
     def get_children(self):
         return self._children
@@ -33,4 +33,7 @@ class CNode(object):
         return cnodes
 
     def __repr__(self):
-        return 'CNode<{}>'.format(self.__dict__)
+        if self.region is None:
+            return f'CNode<{self.id}, region_id:{self.callee_region_id}, children:{self._children}>'
+        else:
+            return f'CNode<{self.id}, region:<{self.callee_region_id}, {self.region.name}>, children:{self._children}>'
