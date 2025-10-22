@@ -16,13 +16,13 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        python-version: [ '3.8', '3.9', '3.10', '3.11', '3.12' ]
+        python-version: [ '3.8', '3.9', '3.10', '3.11', '3.12', '3.13' ]
         include:
           - os: ubuntu-22.04
             python-version: '3.7'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -32,11 +32,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install autopep8 pytest pytest-cov
           pip install .
-      - name: autopep8
-        id: autopep8
-        uses: peter-evans/autopep8@v1
-        with:
-          args: --recursive --in-place --aggressive --aggressive .
+      - name: Format with autopep8
+        run: python -m autopep8 --recursive --in-place --aggressive --aggressive .
       - name: Test with pytest
         run: |
           cd test
@@ -45,5 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pytest-results-${{ matrix.python-version }}
-          path: /home/runner/work/pycubexr/pycubexr/test/junit/test-results-${{ matrix.python-version }}.xml
+          path: test/junit/test-results-${{ matrix.python-version }}.xml
         if: ${{ always() }}
