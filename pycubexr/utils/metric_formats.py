@@ -5,7 +5,7 @@ METRIC_FORMATS = {
     'COMPLEX': numpy.complex128,
     'DOUBLE': numpy.float64,
     'FLOAT': numpy.float64,  # Is defined as float 64
-    # 'HISTOGRAM': lambda n: str(int(n)) + 'd',
+    # 'HISTOGRAM': lambda n: [('min', numpy.float64), ('max', numpy.float64), ('vals', (numpy.float64, (int(n),)))],
     'INT': numpy.int32,
     'INT16': numpy.int16,
     'INT32': numpy.int32,
@@ -14,7 +14,7 @@ METRIC_FORMATS = {
     'INTEGER': numpy.int64,
     'MAXDOUBLE': numpy.float64,
     'MINDOUBLE': numpy.float64,
-    'NDOUBLES': lambda n: (numpy.float64, (n,)),
+    'NDOUBLES': lambda n: (numpy.float64, (int(n),)),
     'RATE': [('main', numpy.float64), ('time', numpy.float64)],
     # 'SCALE_FUNC': 'P',
     'SHORT INT': numpy.int16,
@@ -22,7 +22,7 @@ METRIC_FORMATS = {
     'SIGNED INTEGER': numpy.int64,
     'SIGNED SHORT INT': numpy.int16,
     'TAU_ATOMIC': [('n', numpy.uint32), ('min', numpy.float64), ('max', numpy.float64), ('sum', numpy.float64),
-                   ('sum2', numpy.float64)],  # TODO check if uint32 is correct
+                   ('sum2', numpy.float64)],
     'UINT16': numpy.uint16,
     'UINT32': numpy.uint32,
     'UINT64': numpy.uint64,

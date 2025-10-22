@@ -3,10 +3,10 @@ import struct
 import zlib
 from typing import List, BinaryIO, Any
 
-import numpy
 import numpy as np
 
 from pycubexr.classes.values import convert_type
+from pycubexr.utils.exceptions import UnsupportedMetricFormatError
 from pycubexr.utils.metric_formats import METRIC_FORMATS
 
 DATA_HEADER: bytes = b'CUBEX.DATA'
@@ -32,12 +32,14 @@ def parse_data(
     else:
         raw = data_file.read()
 
-    data_type, parameters, binary_type = _get_metric_format(data_type)
+    internal_data_type, parameters, binary_type = _get_metric_format(data_type)
+    if internal_data_type is None:
+        raise UnsupportedMetricFormatError(data_type)
 
     dtype = np.dtype(binary_type).newbyteorder(endianness_format_char)
 
     data = np.frombuffer(raw, dtype=dtype)
-    return convert_type(data_type, parameters, data, allow_full_uint64_values)
+    return convert_type(internal_data_type, parameters, data, allow_full_uint64_values)
 
 
 def _get_metric_format(data_type):

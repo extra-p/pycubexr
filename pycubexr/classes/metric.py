@@ -1,8 +1,6 @@
 import warnings
 from typing import List
 
-from pycubexr.utils.metric_formats import METRIC_FORMATS
-
 
 class MetricType(object):
     INCLUSIVE = 'INCLUSIVE'
@@ -25,7 +23,6 @@ class Metric(object):
             childs: List
     ):
         assert hasattr(MetricType, metric_type)
-        assert data_type in METRIC_FORMATS
         self.name = name
         self.id = _id
         self.display_name = display_name

@@ -62,6 +62,7 @@ def parse_cnode(xml_node: XMLNode):
     )
     for cnode_xml_child in xml_node.findall('cnode'):
         cnode_child = parse_cnode(cnode_xml_child)
+        cnode_child.parent = cnode
         cnode.add_child(cnode_child)
     for parameter_xml in xml_node.findall('parameter'):
         partype = parameter_xml.get('partype')
