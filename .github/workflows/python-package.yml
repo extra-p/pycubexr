@@ -5,7 +5,7 @@ name: Test pycubexr package
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, testci ]
   pull_request:
     branches: [ master ]
 
