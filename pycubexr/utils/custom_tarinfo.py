@@ -60,12 +60,22 @@ class TarInfoWithoutCheck(tarfile.TarInfo):
 
     @classmethod
     def frombuf(cls, buf, encoding, errors):
+        buf = cls.__ensure_correct_checksum(buf)
+        return super(TarInfoWithoutCheck, cls).frombuf(buf, encoding, errors)
+
+    @classmethod
+    def _frombuf(cls, buf, encoding, errors, *, dircheck=True):
+        buf = cls.__ensure_correct_checksum(buf)
+        return super(TarInfoWithoutCheck, cls)._frombuf(buf, encoding, errors, dircheck=dircheck)
+
+    @classmethod
+    def __ensure_correct_checksum(cls, buf):
         if len(buf) == 0:
-            super(TarInfoWithoutCheck, cls).frombuf(buf, encoding, errors)
+            return buf
         if len(buf) != BLOCKSIZE:
-            super(TarInfoWithoutCheck, cls).frombuf(buf, encoding, errors)
+            return buf
         if buf.count(tarfile.NUL) == BLOCKSIZE:
-            super(TarInfoWithoutCheck, cls).frombuf(buf, encoding, errors)
+            return buf
 
         chksum = nti(buf[148:156])
         unsigned_chksum = 256 + sum(struct.unpack_from("148B8x356B", buf))
@@ -74,5 +84,4 @@ class TarInfoWithoutCheck(tarfile.TarInfo):
         if chksum not in calculated_checksums:
             warnings.warn(cls.checksum_warning)
         buf = buf[:148] + bytes("%07o\0" % unsigned_chksum, "ascii") + buf[156:]
-
-        return super(TarInfoWithoutCheck, cls).frombuf(buf, encoding, errors)
+        return buf
